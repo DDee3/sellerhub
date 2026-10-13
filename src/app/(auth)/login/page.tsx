@@ -46,14 +46,18 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (values: LoginFormValues) => {
+    console.log("[Login] Form submitted with email:", values.email);
     setIsLoading(true);
     const supabase = createClient();
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log("[Login] Calling supabase.auth.signInWithPassword...");
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
       });
+
+      console.log("[Login] signInWithPassword result:", { user: data?.user?.id, error });
 
       if (error) {
         toast.error(error.message || "အကောင့်ဝင်ရောက်မှု မအောင်မြင်ပါ");
@@ -64,6 +68,7 @@ export default function LoginPage() {
       router.push("/dashboard");
       router.refresh();
     } catch (err: unknown) {
+      console.error("[Login] Unexpected catch error:", err);
       toast.error("တစ်ခုခု မှားယွင်းနေပါသည်။ ထပ်မံကြိုးစားကြည့်ပါ။");
     } finally {
       setIsLoading(false);
@@ -82,7 +87,14 @@ export default function LoginPage() {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit(onSubmit)(e);
+          }}
+          noValidate
+          className="space-y-4"
+        >
           <FormField
             control={form.control}
             name="email"

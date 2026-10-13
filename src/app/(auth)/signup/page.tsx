@@ -61,10 +61,18 @@ export default function SignupPage() {
   });
 
   const onSubmit = async (values: SignupFormValues) => {
+    console.log("[Signup] Form submitted with values:", {
+      shop_name: values.shop_name,
+      owner_name: values.owner_name,
+      phone: values.phone,
+      email: values.email,
+    });
+
     setIsLoading(true);
     const supabase = createClient();
 
     try {
+      console.log("[Signup] Calling supabase.auth.signUp...");
       // 1. Sign up user with metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
@@ -78,24 +86,40 @@ export default function SignupPage() {
         },
       });
 
+      console.log("[Signup] supabase.auth.signUp result:", {
+        user: authData?.user?.id,
+        session: !!authData?.session,
+        error: authError,
+      });
+
       if (authError) {
+        console.error("[Signup] authError:", authError);
         toast.error(authError.message || "အကောင့်ဖွင့်ခြင်း မအောင်မြင်ပါ");
         return;
       }
 
       if (!authData.user) {
+        console.error("[Signup] No user returned from signUp");
         toast.error("အကောင့်ဖွင့်ခြင်း မအောင်မြင်ပါ။ ပြန်လည်စမ်းသပ်ကြည့်ပါ။");
         return;
       }
 
+      console.log("[Signup] Inserting into shops table for user:", authData.user.id);
       // 2. Insert into shops table
-      const { error: shopError } = await supabase.from("shops").insert({
-        owner_id: authData.user.id,
-        name: values.shop_name,
-        phone: values.phone,
-      });
+      const { data: insertedShop, error: shopError } = await supabase
+        .from("shops")
+        .insert({
+          owner_id: authData.user.id,
+          name: values.shop_name,
+          phone: values.phone,
+        })
+        .select()
+        .single();
+
+      console.log("[Signup] shops table insert result:", { insertedShop, shopError });
 
       if (shopError) {
+        console.error("[Signup] shopError:", shopError);
         toast.error(`ဆိုင်အချက်အလက် သိမ်းဆည်းရာတွင် အမှားဖြစ်ပေါ်ပါသည်: ${shopError.message}`);
         return;
       }
@@ -104,10 +128,15 @@ export default function SignupPage() {
       router.push("/dashboard");
       router.refresh();
     } catch (err: unknown) {
+      console.error("[Signup] Unexpected catch error:", err);
       toast.error("တစ်ခုခု မှားယွင်းနေပါသည်။ ထပ်မံကြိုးစားကြည့်ပါ။");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const onError = (errors: unknown) => {
+    console.warn("[Signup] Validation errors:", errors);
   };
 
   return (
@@ -122,7 +151,14 @@ export default function SignupPage() {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit(onSubmit, onError)(e);
+          }}
+          noValidate
+          className="space-y-4"
+        >
           <FormField
             control={form.control}
             name="shop_name"
@@ -259,7 +295,7 @@ export default function SignupPage() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 text-base font-semibold shadow-sm transition-all mt-2"
+            className="w-full h-12 text-base font-semibold shadow-sm transition-all mt-2 cursor-pointer"
           >
             {isLoading ? (
               <>
