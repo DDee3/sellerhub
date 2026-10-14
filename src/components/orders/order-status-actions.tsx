@@ -38,58 +38,6 @@ export function OrderStatusActions({
   const updateStatus = async (newStatus: OrderStatus) => {
     setIsUpdating(true);
     try {
-      // If cancelling a stock order, restore inventory
-      if (
-        newStatus === "cancelled" &&
-        currentStatus !== "cancelled" &&
-        orderType === "stock"
-      ) {
-        // Fetch order's shop_id
-        const { data: orderData } = await supabase
-          .from("orders")
-          .select("shop_id")
-          .eq("id", orderId)
-          .single();
-
-        // Fetch order items
-        const { data: items, error: itemsErr } = await supabase
-          .from("order_items")
-          .select("product_id, quantity")
-          .eq("order_id", orderId);
-
-        if (itemsErr) {
-          toast.error("ပစ္စည်းစာရင်း ရယူ၍ မရပါ");
-          return;
-        }
-
-        if (items && orderData?.shop_id) {
-          for (const item of items) {
-            if (!item.product_id) continue;
-
-            const { data: prod } = await supabase
-              .from("products")
-              .select("stock_qty")
-              .eq("id", item.product_id)
-              .single();
-
-            if (prod) {
-              await supabase
-                .from("products")
-                .update({ stock_qty: prod.stock_qty + item.quantity })
-                .eq("id", item.product_id);
-
-              await supabase.from("stock_movements").insert({
-                shop_id: orderData.shop_id,
-                product_id: item.product_id,
-                change: item.quantity,
-                reason: "returned",
-                note: `Order ${orderId} cancelled`,
-              });
-            }
-          }
-        }
-      }
-
       const { error } = await supabase
         .from("orders")
         .update({ status: newStatus })
@@ -101,11 +49,91 @@ export function OrderStatusActions({
       }
 
       toast.success("အခြေအနေ ပြောင်းပြီးပါပြီ");
-      setCancelDialogOpen(false);
       router.refresh();
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်"
+      );
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    // Guard: only run restore if not already cancelled
+    if (currentStatus === "cancelled") return;
+
+    setIsUpdating(true);
+    try {
+      // If stock order, restore inventory first
+      if (orderType === "stock") {
+        const { data: items, error: itemsErr } = await supabase
+          .from("order_items")
+          .select("product_id, quantity")
+          .eq("order_id", orderId);
+
+        if (itemsErr) {
+          throw new Error(itemsErr.message);
+        }
+
+        if (items) {
+          for (const item of items) {
+            if (!item.product_id) continue;
+
+            const { data: prod, error: prodErr } = await supabase
+              .from("products")
+              .select("stock_qty, shop_id")
+              .eq("id", item.product_id)
+              .single();
+
+            if (prodErr) {
+              throw new Error(prodErr.message);
+            }
+
+            if (prod) {
+              const { error: updateErr } = await supabase
+                .from("products")
+                .update({ stock_qty: prod.stock_qty + item.quantity })
+                .eq("id", item.product_id);
+
+              if (updateErr) {
+                throw new Error(updateErr.message);
+              }
+
+              const { error: moveErr } = await supabase
+                .from("stock_movements")
+                .insert({
+                  shop_id: prod.shop_id,
+                  product_id: item.product_id,
+                  change: item.quantity,
+                  reason: "returned",
+                  note: `Order ${orderId} cancelled`,
+                });
+
+              if (moveErr) {
+                throw new Error(moveErr.message);
+              }
+            }
+          }
+        }
+      }
+
+      // THEN update order status to cancelled
+      const { error: statusErr } = await supabase
+        .from("orders")
+        .update({ status: "cancelled" })
+        .eq("id", orderId);
+
+      if (statusErr) {
+        throw new Error(statusErr.message);
+      }
+
+      toast.success("အော်ဒါ ပယ်ဖျက်ပြီးပါပြီ");
+      setCancelDialogOpen(false);
+      router.refresh();
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "အော်ဒါ ပယ်ဖျက်ရာတွင် အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်"
       );
     } finally {
       setIsUpdating(false);
@@ -186,7 +214,7 @@ export function OrderStatusActions({
             />
             <Button
               variant="destructive"
-              onClick={() => updateStatus("cancelled")}
+              onClick={handleCancel}
               disabled={isUpdating}
               className="gap-2"
             >
