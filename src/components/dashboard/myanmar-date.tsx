@@ -36,15 +36,15 @@ function formatMyanmarDate(date: Date): string {
   return `${year} ခုနှစ်၊ ${monthName}လ (${dayNum}) ရက်၊ ${dayName}နေ့`;
 }
 
-export function MyanmarDate() {
+export function MyanmarDate({ date }: { date?: string | Date } = {}) {
   const [dateStr, setDateStr] = useState<string>("");
 
   useEffect(() => {
-    setDateStr(formatMyanmarDate(new Date()));
-  }, []);
+    setDateStr(formatMyanmarDate(date ? new Date(date) : new Date()));
+  }, [date]);
 
   if (!dateStr) {
-    return <span className="inline-block h-4 w-44 bg-slate-100 rounded animate-pulse" />;
+    return <span className="inline-block h-4 w-32 bg-slate-100 rounded animate-pulse" />;
   }
 
   return <span>{dateStr}</span>;
