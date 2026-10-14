@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { format } from "date-fns";
 import {
   Package,
   ShoppingCart,
@@ -21,40 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-const myanmarMonths = [
-  "ဇန်နဝါရီ",
-  "ဖေဖော်ဝါရီ",
-  "မတ်",
-  "ဧပြီ",
-  "မေ",
-  "ဇွန်",
-  "ဇူလိုင်",
-  "ဩဂုတ်",
-  "စက်တင်ဘာ",
-  "အောက်တိုဘာ",
-  "နိုဝင်ဘာ",
-  "ဒီဇင်ဘာ",
-];
-
-const myanmarDays = [
-  "တနင်္ဂနွေ",
-  "တနင်္လာ",
-  "အင်္ဂါ",
-  "ဗုဒ္ဓဟူး",
-  "ကြာသပတေး",
-  "သောကြာ",
-  "စနေ",
-];
-
-function formatMyanmarDate(date: Date): string {
-  const dayName = myanmarDays[date.getDay()];
-  const dayNum = date.getDate();
-  const monthName = myanmarMonths[date.getMonth()];
-  const year = date.getFullYear();
-
-  return `${year} ခုနှစ်၊ ${monthName}လ (${dayNum}) ရက်၊ ${dayName}နေ့`;
-}
+import { MyanmarDate } from "@/components/dashboard/myanmar-date";
 
 function getShipmentStatusBadge(status: string) {
   switch (status) {
@@ -101,8 +67,6 @@ export default async function DashboardPage() {
     getLowStockProducts(shop.id),
   ]);
 
-  const todayStr = formatMyanmarDate(new Date());
-
   return (
     <div className="space-y-6 pb-8">
       {/* 1. Header */}
@@ -111,7 +75,9 @@ export default async function DashboardPage() {
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             မင်္ဂလာပါ, {shop.name} 👋
           </h1>
-          <p className="text-sm text-slate-500 mt-1">{todayStr}</p>
+          <p className="text-sm text-slate-500 mt-1">
+            <MyanmarDate />
+          </p>
         </div>
 
         {/* 3. Quick Actions */}

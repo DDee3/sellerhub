@@ -1,4 +1,5 @@
 import "server-only";
+import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { format, addDays } from "date-fns";
 
@@ -74,6 +75,7 @@ export async function getDashboardStats(shopId: string): Promise<DashboardStats>
 }
 
 export async function getUpcomingShipments(shopId: string, days = 7) {
+  await connection();
   const supabase = await createClient();
   const maxDate = format(addDays(new Date(), days), "yyyy-MM-dd");
 
