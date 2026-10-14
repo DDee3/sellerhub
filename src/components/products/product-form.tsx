@@ -340,7 +340,7 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
               <FormControl>
                 <Input
                   {...field}
-                  placeholder="ဥပမာ - Thailand, China, BKK"
+                  placeholder="Thailand / China / Korea"
                   className="h-12 text-base bg-white border-slate-200"
                 />
               </FormControl>

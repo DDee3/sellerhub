@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const productSchema = z.object({
   name: z.string().min(1, "နာမည် ထည့်ပါ"),
-  image_url: z.string().url("URL ပုံစံ မှန်ကန်စွာ ထည့်ပါ").optional().or(z.literal("")),
+  image_url: z.string().url().optional().or(z.literal("")),
   price: z.coerce.number().min(0, "ဈေးနှုန်း ထည့်ပါ"),
   type: z.enum(["stock", "preorder", "hybrid"]),
   stock_qty: z.coerce.number().int().min(0).default(0),
@@ -14,4 +14,3 @@ export const productSchema = z.object({
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
-
