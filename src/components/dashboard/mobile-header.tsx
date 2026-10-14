@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 
-export function MobileHeader({ shopName }: { shopName: string }) {
+export function MobileHeader({ shopName }: { shopName?: string }) {
   const [open, setOpen] = useState(false);
 
   return (

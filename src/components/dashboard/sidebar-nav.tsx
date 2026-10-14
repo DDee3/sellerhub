@@ -43,7 +43,7 @@ const navItems = [
 ];
 
 interface SidebarNavProps {
-  shopName: string;
+  shopName?: string;
   onNavigate?: () => void;
 }
 

@@ -1,11 +1,9 @@
-export const dynamic = "force-dynamic";
-
 import Link from "next/link";
-import Image from "next/image";
 import { Package, Plus } from "lucide-react";
 
 import { getProducts } from "@/lib/queries/products";
 import { ProductFilters } from "@/components/products/product-filters";
+import { ProductThumbnail } from "@/components/products/product-thumbnail";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
@@ -88,18 +86,11 @@ export default async function ProductsPage({
             >
               <Card className="flex items-center gap-4 p-4 bg-white border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-sm transition-all cursor-pointer">
                 {/* Product image or placeholder */}
-                <div className="shrink-0 h-16 w-16 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center border border-slate-200/60">
-                  {product.image_url ? (
-                    <Image
-                      src={product.image_url}
-                      alt={product.name}
-                      width={64}
-                      height={64}
-                      className="object-cover w-full h-full"
-                    />
-                  ) : (
-                    <Package className="h-7 w-7 text-slate-400" />
-                  )}
+                <div className="shrink-0">
+                  <ProductThumbnail
+                    src={product.image_url}
+                    alt={product.name}
+                  />
                 </div>
 
                 {/* Middle: name, type badge, price */}

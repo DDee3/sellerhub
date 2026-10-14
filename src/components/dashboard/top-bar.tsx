@@ -13,7 +13,7 @@ const routeTitles: Record<string, string> = {
   "/customers": "ဝယ်ယူသူများ စာရင်း",
 };
 
-export function TopBar({ shopName }: { shopName: string }) {
+export function TopBar({ shopName }: { shopName?: string }) {
   const pathname = usePathname();
 
   // Find matching title based on path prefix
