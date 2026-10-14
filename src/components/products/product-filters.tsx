@@ -54,52 +54,55 @@ export function ProductFilters() {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3">
+    <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
       {/* Search input */}
-      <div className="relative flex-1">
+      <div className="relative flex-1 min-w-0">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
         <Input
           value={search}
           onChange={handleSearchChange}
           placeholder="ရှာဖွေ..."
-          className="h-12 pl-9 text-base bg-white border-slate-200"
+          className="h-11 pl-9 text-base bg-white border-slate-200"
         />
       </div>
 
-      {/* Type filter */}
-      <Select
-        value={currentType}
-        onValueChange={(value: string | null) =>
-          updateParams({ type: value ?? "all" })
-        }
-      >
-        <SelectTrigger className="h-12 min-w-36 bg-white border-slate-200 text-base">
-          <SelectValue placeholder="အမျိုးအစား" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">အမျိုးအစားအားလုံး</SelectItem>
-          <SelectItem value="stock">Stock</SelectItem>
-          <SelectItem value="preorder">Pre-order</SelectItem>
-          <SelectItem value="hybrid">Hybrid</SelectItem>
-        </SelectContent>
-      </Select>
+      {/* Select filters */}
+      <div className="flex gap-2 items-center">
+        {/* Type filter */}
+        <Select
+          value={currentType}
+          onValueChange={(value: string | null) =>
+            updateParams({ type: value ?? "all" })
+          }
+        >
+          <SelectTrigger className="w-[140px] h-11 bg-white border-slate-200 text-sm">
+            <SelectValue placeholder="အမျိုးအစားအားလုံး" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">အားလုံး</SelectItem>
+            <SelectItem value="stock">လက်ကျန်</SelectItem>
+            <SelectItem value="preorder">ကြိုမှာ</SelectItem>
+            <SelectItem value="hybrid">နှစ်မျိုးရော</SelectItem>
+          </SelectContent>
+        </Select>
 
-      {/* Active/inactive filter */}
-      <Select
-        value={currentActive}
-        onValueChange={(value: string | null) =>
-          updateParams({ active: value ?? "all" })
-        }
-      >
-        <SelectTrigger className="h-12 min-w-36 bg-white border-slate-200 text-base">
-          <SelectValue placeholder="အခြေအနေ" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">အခြေအနေအားလုံး</SelectItem>
-          <SelectItem value="active">လှုပ်ရှားသော</SelectItem>
-          <SelectItem value="inactive">မလှုပ်ရှားသော</SelectItem>
-        </SelectContent>
-      </Select>
+        {/* Active/inactive filter */}
+        <Select
+          value={currentActive}
+          onValueChange={(value: string | null) =>
+            updateParams({ active: value ?? "all" })
+          }
+        >
+          <SelectTrigger className="w-[120px] h-11 bg-white border-slate-200 text-sm">
+            <SelectValue placeholder="အခြေအနေ" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">အားလုံး</SelectItem>
+            <SelectItem value="active">အသက်ဝင်</SelectItem>
+            <SelectItem value="inactive">မလှုပ်ရှား</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 }
