@@ -61,7 +61,7 @@ export function OrderForm({ products, customers }: OrderFormProps) {
       new_customer_phone: "",
       new_customer_facebook: "",
       order_type: "stock",
-      deposit_paid: 0,
+      deposit_paid: "" as unknown as number,
       payment_method: "kbz_pay",
       note: "",
       items: [{ product_id: products[0]?.id || "", quantity: 1 }],
@@ -86,15 +86,25 @@ export function OrderForm({ products, customers }: OrderFormProps) {
     return sum + Number(product.price) * qty;
   }, 0);
 
-  const watchedDepositPaid = form.watch("deposit_paid") || 0;
-  const balanceDue = Math.max(0, total - (Number(watchedDepositPaid) || 0));
+  const watchedDepositPaid = form.watch("deposit_paid");
+  const depositNum = Number(watchedDepositPaid) || 0;
+  const balanceDue = Math.max(0, total - depositNum);
 
   const onSubmit = async (values: OrderFormValues) => {
     try {
+      const sanitizedValues: OrderFormValues = {
+        ...values,
+        deposit_paid: Number(values.deposit_paid) || 0,
+        items: values.items.map((item) => ({
+          ...item,
+          quantity: Number(item.quantity) || 1,
+        })),
+      };
+
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(sanitizedValues),
       });
 
       const data = await res.json();
@@ -357,10 +367,11 @@ export function OrderForm({ products, customers }: OrderFormProps) {
           <CardContent className="pt-4 space-y-3">
             {fields.map((fieldItem, index) => {
               const currentProductId = form.watch(`items.${index}.product_id`);
-              const currentQty = form.watch(`items.${index}.quantity`) || 0;
+              const currentQty = form.watch(`items.${index}.quantity`);
               const product = products.find((p) => p.id === currentProductId);
+              const qty = Number(currentQty) || 0;
               const subtotal = product
-                ? Number(product.price) * Number(currentQty)
+                ? Number(product.price) * qty
                 : 0;
 
               return (
@@ -415,6 +426,8 @@ export function OrderForm({ products, customers }: OrderFormProps) {
                             <FormControl>
                               <Input
                                 type="number"
+                                inputMode="numeric"
+                                step="any"
                                 min="1"
                                 placeholder="1"
                                 value={field.value ?? ""}
@@ -490,12 +503,14 @@ export function OrderForm({ products, customers }: OrderFormProps) {
                     <FormControl>
                       <Input
                         type="number"
+                        inputMode="numeric"
+                        step="any"
                         min="0"
                         placeholder="0"
-                        value={field.value ?? ""}
+                        value={field.value === 0 ? "" : (field.value ?? "")}
                         onChange={(e) =>
                           field.onChange(
-                            e.target.value === "" ? 0 : Number(e.target.value)
+                            e.target.value === "" ? "" : Number(e.target.value)
                           )
                         }
                         className="h-12 text-base bg-white border-slate-200"

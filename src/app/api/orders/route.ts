@@ -106,17 +106,23 @@ export async function POST(request: Request) {
 
     const productMap = new Map(products.map((p) => [p.id, p]));
 
+    const depositPaid = Number(body.deposit_paid) || 0;
+    const normalizedItems = body.items.map((item) => ({
+      product_id: item.product_id,
+      quantity: Math.max(1, Number(item.quantity) || 1),
+    }));
+
     // 5. Compute totals server-side (do NOT trust client)
-    const totalPrice = body.items.reduce((sum, item) => {
+    const totalPrice = normalizedItems.reduce((sum, item) => {
       const product = productMap.get(item.product_id)!;
       return sum + product.price * item.quantity;
     }, 0);
 
-    const balanceDue = Math.max(0, totalPrice - (body.deposit_paid || 0));
+    const balanceDue = Math.max(0, totalPrice - depositPaid);
 
     // 6. If order_type === 'stock': verify stock for each item
     if (body.order_type === "stock") {
-      for (const item of body.items) {
+      for (const item of normalizedItems) {
         const product = productMap.get(item.product_id)!;
         if (product.stock_qty < item.quantity) {
           return NextResponse.json(
@@ -136,7 +142,7 @@ export async function POST(request: Request) {
         shipment_id: null,
         order_type: body.order_type,
         total_price: totalPrice,
-        deposit_paid: body.deposit_paid || 0,
+        deposit_paid: depositPaid,
         balance_due: balanceDue,
         payment_method: body.payment_method,
         status: "pending",
@@ -155,7 +161,7 @@ export async function POST(request: Request) {
     const orderId = order.id;
 
     // 8. Insert order_items (batch insert)
-    const orderItemsRows = body.items.map((item) => {
+    const orderItemsRows = normalizedItems.map((item) => {
       const product = productMap.get(item.product_id)!;
       return {
         order_id: orderId,
@@ -180,7 +186,7 @@ export async function POST(request: Request) {
 
     // 9. If order_type === 'stock': decrement stock + log movements
     if (body.order_type === "stock") {
-      for (const item of body.items) {
+      for (const item of normalizedItems) {
         const product = productMap.get(item.product_id)!;
 
         const { error: stockErr } = await supabase

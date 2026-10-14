@@ -38,7 +38,10 @@ interface OrderPaymentEditorProps {
 }
 
 const paymentEditorSchema = z.object({
-  deposit_paid: z.coerce.number().min(0, "စရံငွေ အနည်းဆုံး ၀ ကျပ် ဖြစ်ရပါမည်"),
+  deposit_paid: z.preprocess(
+    (val) => (val === "" || val === undefined ? 0 : val),
+    z.coerce.number().min(0, "စရံငွေ အနည်းဆုံး ၀ ကျပ် ဖြစ်ရပါမည်").default(0)
+  ),
   payment_method: z.enum(["kbz_pay", "wave_pay", "cash", "cod"]),
 });
 
@@ -63,7 +66,7 @@ export function OrderPaymentEditor({
   const form = useForm<PaymentEditorFormValues>({
     resolver: zodResolver(paymentEditorSchema) as unknown as Resolver<PaymentEditorFormValues>,
     defaultValues: {
-      deposit_paid: depositPaid,
+      deposit_paid: depositPaid === 0 ? ("" as unknown as number) : depositPaid,
       payment_method: validPaymentMethod,
     },
   });
@@ -77,12 +80,13 @@ export function OrderPaymentEditor({
 
   const onSubmit = async (data: PaymentEditorFormValues) => {
     try {
-      const computedBalance = Math.max(0, totalPrice - data.deposit_paid);
+      const sanitizedDeposit = Number(data.deposit_paid) || 0;
+      const computedBalance = Math.max(0, totalPrice - sanitizedDeposit);
 
       const { error } = await supabase
         .from("orders")
         .update({
-          deposit_paid: data.deposit_paid,
+          deposit_paid: sanitizedDeposit,
           balance_due: computedBalance,
           payment_method: data.payment_method,
         })
@@ -134,10 +138,17 @@ export function OrderPaymentEditor({
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="numeric"
+                      step="any"
                       min={0}
                       className="h-12 bg-white border-slate-200 text-base"
                       placeholder="0"
-                      {...field}
+                      value={field.value === 0 ? "" : (field.value ?? "")}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value === "" ? "" : Number(e.target.value)
+                        )
+                      }
                     />
                   </FormControl>
                   <FormMessage />
@@ -205,4 +216,3 @@ export function OrderPaymentEditor({
     </Card>
   );
 }
-

@@ -46,11 +46,11 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
     defaultValues: initialValues || {
       name: "",
       image_url: "",
-      price: 0,
+      price: "" as unknown as number,
       type: "stock",
-      stock_qty: 0,
+      stock_qty: "" as unknown as number,
       low_stock_alert: 3,
-      deposit_percent: 0,
+      deposit_percent: "" as unknown as number,
       source: "",
       description: "",
       is_active: true,
@@ -62,6 +62,13 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
 
   const onSubmit = async (values: ProductFormValues) => {
     try {
+      const sanitizedPrice = Number(values.price) || 0;
+      const sanitizedStockQty =
+        values.type === "preorder" ? 0 : Number(values.stock_qty) || 0;
+      const sanitizedLowStock = Number(values.low_stock_alert) || 3;
+      const sanitizedDepositPercent =
+        values.type === "stock" ? 0 : Number(values.deposit_percent) || 0;
+
       if (productId) {
         // Edit existing product
         const { error } = await supabase
@@ -69,11 +76,11 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           .update({
             name: values.name,
             image_url: values.image_url || null,
-            price: values.price,
+            price: sanitizedPrice,
             type: values.type,
-            stock_qty: values.type === "preorder" ? 0 : values.stock_qty,
-            low_stock_alert: values.low_stock_alert,
-            deposit_percent: values.type === "stock" ? 0 : values.deposit_percent,
+            stock_qty: sanitizedStockQty,
+            low_stock_alert: sanitizedLowStock,
+            deposit_percent: sanitizedDepositPercent,
             source: values.source || null,
             description: values.description || null,
             is_active: values.is_active,
@@ -111,11 +118,11 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           shop_id: shop.id,
           name: values.name,
           image_url: values.image_url || null,
-          price: values.price,
+          price: sanitizedPrice,
           type: values.type,
-          stock_qty: values.type === "preorder" ? 0 : values.stock_qty,
-          low_stock_alert: values.low_stock_alert,
-          deposit_percent: values.type === "stock" ? 0 : values.deposit_percent,
+          stock_qty: sanitizedStockQty,
+          low_stock_alert: sanitizedLowStock,
+          deposit_percent: sanitizedDepositPercent,
           source: values.source || null,
           description: values.description || null,
           is_active: values.is_active,
@@ -145,7 +152,7 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-slate-700">
-                နာမည် *
+                ပစ္စည်းနာမည် *
               </FormLabel>
               <FormControl>
                 <Input
@@ -192,12 +199,14 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
               <FormControl>
                 <Input
                   type="number"
+                  inputMode="numeric"
+                  step="any"
                   min="0"
                   placeholder="0"
-                  value={field.value ?? ""}
+                  value={field.value === 0 ? "" : (field.value ?? "")}
                   onChange={(e) =>
                     field.onChange(
-                      e.target.value === "" ? 0 : Number(e.target.value)
+                      e.target.value === "" ? "" : Number(e.target.value)
                     )
                   }
                   className="h-12 text-base bg-white border-slate-200"
@@ -252,12 +261,14 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
                 <FormControl>
                   <Input
                     type="number"
+                    inputMode="numeric"
+                    step="any"
                     min="0"
                     placeholder="0"
-                    value={field.value ?? ""}
+                    value={field.value === 0 ? "" : (field.value ?? "")}
                     onChange={(e) =>
                       field.onChange(
-                        e.target.value === "" ? 0 : Number(e.target.value)
+                        e.target.value === "" ? "" : Number(e.target.value)
                       )
                     }
                     className="h-12 text-base bg-white border-slate-200"
@@ -281,12 +292,14 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
               <FormControl>
                 <Input
                   type="number"
+                  inputMode="numeric"
+                  step="any"
                   min="0"
                   placeholder="3"
-                  value={field.value ?? ""}
+                  value={field.value === 0 ? "" : (field.value ?? "")}
                   onChange={(e) =>
                     field.onChange(
-                      e.target.value === "" ? 0 : Number(e.target.value)
+                      e.target.value === "" ? "" : Number(e.target.value)
                     )
                   }
                   className="h-12 text-base bg-white border-slate-200"
@@ -310,13 +323,15 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
                 <FormControl>
                   <Input
                     type="number"
+                    inputMode="numeric"
+                    step="any"
                     min="0"
                     max="100"
                     placeholder="0"
-                    value={field.value ?? ""}
+                    value={field.value === 0 ? "" : (field.value ?? "")}
                     onChange={(e) =>
                       field.onChange(
-                        e.target.value === "" ? 0 : Number(e.target.value)
+                        e.target.value === "" ? "" : Number(e.target.value)
                       )
                     }
                     className="h-12 text-base bg-white border-slate-200"
@@ -340,7 +355,7 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
               <FormControl>
                 <Input
                   {...field}
-                  placeholder="Thailand / China / Korea"
+                  placeholder="ဥပမာ - BKK, China, Local"
                   className="h-12 text-base bg-white border-slate-200"
                 />
               </FormControl>
@@ -356,13 +371,13 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-slate-700">
-                မှတ်ချက်
+                အသေးစိတ် ဖော်ပြချက်
               </FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
+                  placeholder="ပစ္စည်း အကြောင်း အသေးစိတ် ရေးရန်"
                   rows={3}
-                  placeholder="ပစ္စည်းနှင့် ပတ်သက်သည့် အချက်အလက်များ"
                   className="text-base bg-white border-slate-200"
                 />
               </FormControl>
@@ -371,27 +386,27 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           )}
         />
 
-        {/* Active switch */}
+        {/* Is Active Switch */}
         <FormField
           control={form.control}
           name="is_active"
           render={({ field }) => (
             <FormItem className="flex items-center justify-between rounded-lg border border-slate-200 p-4 bg-white">
               <div className="space-y-0.5">
-                <FormLabel className="text-base font-medium text-slate-900 cursor-pointer">
+                <FormLabel className="text-sm font-medium text-slate-900">
                   အသက်ဝင်သည်
                 </FormLabel>
                 <p className="text-xs text-slate-500">
-                  ဤပစ္စည်းကို ရောင်းချနိုင်သော စာရင်းတွင် ထည့်သွင်းထားပါသည်
+                  ပိတ်ထားပါက ပစ္စည်းစာရင်းတွင် မပြသတော့ပါ
                 </p>
               </div>
               <FormControl>
                 <Switch.Root
                   checked={field.value}
-                  onCheckedChange={(checked) => field.onChange(checked)}
-                  className="peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[checked]:bg-primary data-[unchecked]:bg-slate-200"
+                  onCheckedChange={field.onChange}
+                  className="group relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 data-[checked]:bg-primary bg-slate-200"
                 >
-                  <Switch.Thumb className="pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform data-[checked]:translate-x-5 data-[unchecked]:translate-x-0" />
+                  <Switch.Thumb className="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out data-[checked]:translate-x-5 translate-x-0" />
                 </Switch.Root>
               </FormControl>
             </FormItem>
@@ -399,19 +414,19 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
         />
 
         {/* Submit Button */}
-        <div className="pt-2">
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="h-12 w-full text-base font-semibold shadow-xs"
-          >
-            {isSubmitting ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              "သိမ်းဆည်း"
-            )}
-          </Button>
-        </div>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="h-12 w-full text-base font-semibold shadow-xs"
+        >
+          {isSubmitting ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : productId ? (
+            "ပြင်ဆင်ချက် သိမ်းမည်"
+          ) : (
+            "ပစ္စည်း အသစ်ထည့်မည်"
+          )}
+        </Button>
       </form>
     </Form>
   );
