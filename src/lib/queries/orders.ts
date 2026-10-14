@@ -16,6 +16,31 @@ export interface OrderRow {
   items_count: number;
 }
 
+export interface OrderDetail {
+  id: string;
+  customer_id: string;
+  customer_name: string;
+  customer_phone: string | null;
+  customer_facebook: string | null;
+  order_type: "stock" | "preorder";
+  total_price: number;
+  deposit_paid: number;
+  balance_due: number;
+  payment_method: string;
+  status: OrderStatus;
+  note: string | null;
+  created_at: string;
+  shipment_id: string | null;
+  items: {
+    id: string;
+    product_id: string | null;
+    product_name: string;
+    quantity: number;
+    unit_price: number;
+    subtotal: number;
+  }[];
+}
+
 interface RawOrderQueryRow {
   id: string;
   order_type: "stock" | "preorder";
@@ -26,6 +51,48 @@ interface RawOrderQueryRow {
   created_at: string;
   customers: { name: string } | null;
   order_items: { id: string }[] | null;
+}
+
+interface RawOrderDetailRow {
+  id: string;
+  shop_id: string;
+  customer_id: string;
+  shipment_id: string | null;
+  order_type: "stock" | "preorder";
+  total_price: number;
+  deposit_paid: number;
+  balance_due: number;
+  payment_method: string;
+  status: string;
+  note: string | null;
+  created_at: string;
+  customers: {
+    name: string;
+    phone: string | null;
+    facebook_name: string | null;
+  } | null;
+  order_items: {
+    id: string;
+    product_id: string | null;
+    product_name: string;
+    quantity: number;
+    unit_price: number;
+    subtotal: number;
+  }[] | null;
+}
+
+function mapOrderStatus(status: string): OrderStatus {
+  if (
+    status === "confirmed" ||
+    status === "delivered" ||
+    status === "cancelled"
+  ) {
+    return status;
+  }
+  if (status === "paid" || status === "packed" || status === "shipped") {
+    return "confirmed";
+  }
+  return "pending";
 }
 
 export async function getOrders(opts: {
@@ -82,18 +149,6 @@ export async function getOrders(opts: {
   }
 
   return data.map((order): OrderRow => {
-    // Map simplified status or fallback
-    let mappedStatus: OrderStatus = "pending";
-    if (
-      order.status === "confirmed" ||
-      order.status === "delivered" ||
-      order.status === "cancelled"
-    ) {
-      mappedStatus = order.status;
-    } else if (order.status === "paid" || order.status === "packed" || order.status === "shipped") {
-      mappedStatus = "confirmed";
-    }
-
     return {
       id: order.id,
       customer_name: order.customers?.name || "အမည်မသိ ဖောက်သည်",
@@ -101,9 +156,63 @@ export async function getOrders(opts: {
       total_price: order.total_price,
       deposit_paid: order.deposit_paid,
       balance_due: order.balance_due,
-      status: mappedStatus,
+      status: mapOrderStatus(order.status),
       created_at: order.created_at,
       items_count: order.order_items?.length || 0,
     };
   });
+}
+
+export async function getOrderById(id: string): Promise<OrderDetail | null> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const { data: shop } = await supabase
+    .from("shops")
+    .select("id")
+    .eq("owner_id", user.id)
+    .single();
+
+  if (!shop) {
+    return null;
+  }
+
+  const selectColumns = `id, shop_id, customer_id, shipment_id, order_type, total_price, deposit_paid, balance_due, payment_method, status, note, created_at, customers(name, phone, facebook_name), order_items(*)`;
+
+  const { data, error } = await supabase
+    .from("orders")
+    .select<string, RawOrderDetailRow>(selectColumns)
+    .eq("id", id)
+    .eq("shop_id", shop.id)
+    .maybeSingle();
+
+  if (error || !data) {
+    if (error) console.error("Error fetching order by ID:", error);
+    return null;
+  }
+
+  return {
+    id: data.id,
+    customer_id: data.customer_id,
+    customer_name: data.customers?.name || "အမည်မသိ ဖောက်သည်",
+    customer_phone: data.customers?.phone || null,
+    customer_facebook: data.customers?.facebook_name || null,
+    order_type: data.order_type,
+    total_price: data.total_price,
+    deposit_paid: data.deposit_paid,
+    balance_due: data.balance_due,
+    payment_method: data.payment_method,
+    status: mapOrderStatus(data.status),
+    note: data.note,
+    created_at: data.created_at,
+    shipment_id: data.shipment_id,
+    items: data.order_items || [],
+  };
 }

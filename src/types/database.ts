@@ -10,7 +10,7 @@ export type ProductType = 'stock' | 'preorder' | 'hybrid'
 export type ShipmentStatus = 'ordering' | 'in_transit' | 'arrived' | 'delivering' | 'completed'
 export type OrderType = 'stock' | 'preorder'
 export type PaymentMethod = 'kbz_pay' | 'wave_pay' | 'cash' | 'cod'
-export type OrderStatus = 'pending' | 'paid' | 'packed' | 'shipped' | 'delivered' | 'cancelled'
+export type OrderStatus = 'pending' | 'confirmed' | 'paid' | 'packed' | 'shipped' | 'delivered' | 'cancelled'
 export type StockChangeReason = 'import' | 'sale' | 'adjustment' | 'damaged' | 'returned'
 
 export interface Database {
