@@ -17,20 +17,28 @@ export default function DashboardLayout({
 
       {/* Desktop Sidebar (hidden below md) */}
       <aside className="hidden md:flex w-64 lg:w-72 flex-col border-r border-slate-200/80 bg-white p-4 lg:p-6 shrink-0 h-screen sticky top-0">
-        <SidebarNav />
+        <Suspense fallback={<div className="w-full h-full bg-white" />}>
+          <SidebarNav />
+        </Suspense>
       </aside>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile Header (visible below md) */}
-        <MobileHeader />
+        <Suspense fallback={<div className="h-14 bg-white border-b border-slate-200/80" />}>
+          <MobileHeader />
+        </Suspense>
 
         {/* Desktop Top Bar (hidden below md) */}
-        <TopBar />
+        <Suspense fallback={<div className="h-16 bg-white border-b border-slate-200/80" />}>
+          <TopBar />
+        </Suspense>
 
         {/* Page Content */}
         <main className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full flex-1">
-          {children}
+          <Suspense fallback={null}>
+            {children}
+          </Suspense>
         </main>
       </div>
     </div>

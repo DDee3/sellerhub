@@ -4,6 +4,7 @@ import { ArrowLeft, Pencil } from "lucide-react";
 
 import { getOrderById, type OrderStatus } from "@/lib/queries/orders";
 import { OrderStatusActions } from "@/components/orders/order-status-actions";
+import { OrderPaymentEditor } from "@/components/orders/order-payment-editor";
 import { MyanmarDate } from "@/components/dashboard/myanmar-date";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,13 +14,6 @@ import { cn } from "@/lib/utils";
 interface OrderDetailPageProps {
   params: Promise<{ id: string }>;
 }
-
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  kbz_pay: "KBZ Pay",
-  wave_pay: "Wave Pay",
-  cash: "လက်ငင်း",
-  cod: "ပို့ချိန်ပေး",
-};
 
 function OrderStatusBadge({ status }: { status: OrderStatus }) {
   switch (status) {
@@ -200,50 +194,21 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
         </CardContent>
       </Card>
 
-      {/* Card D: ငွေပေးချေမှု */}
-      <Card className="bg-white border-slate-200/80 shadow-xs">
-        <CardHeader className="border-b border-slate-100 pb-3">
-          <CardTitle className="text-base font-semibold text-slate-900">
-            ငွေပေးချေမှု
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-4 space-y-2.5 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-slate-500">ငွေပေးချေမှု နည်းလမ်း</span>
-            <span className="font-medium text-slate-900">
-              {PAYMENT_METHOD_LABELS[order.payment_method] ||
-                order.payment_method}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-slate-500">ကျသင့်ငွေ စုစုပေါင်း</span>
-            <span className="font-medium text-slate-900">
-              {order.total_price.toLocaleString()} ကျပ်
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-slate-500">စရံပေးပြီးငွေ</span>
-            <span className="font-medium text-emerald-600">
-              {order.deposit_paid.toLocaleString()} ကျပ်
-            </span>
-          </div>
-          <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-            <span className="font-semibold text-slate-900">ပေးရန်ကျန်ငွေ</span>
-            <span
-              className={cn(
-                "font-bold text-base",
-                order.balance_due > 0 ? "text-amber-600" : "text-slate-900"
-              )}
-            >
-              {order.balance_due.toLocaleString()} ကျပ်
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Card D: ငွေပေးချေမှု (Editable) */}
+      <OrderPaymentEditor
+        orderId={order.id}
+        depositPaid={order.deposit_paid}
+        totalPrice={order.total_price}
+        paymentMethod={order.payment_method}
+      />
 
       {/* Bottom action row */}
       <div className="flex items-center justify-between gap-3 pt-2">
-        <OrderStatusActions orderId={id} currentStatus={order.status} />
+        <OrderStatusActions
+          orderId={id}
+          currentStatus={order.status}
+          orderType={order.order_type}
+        />
         <Link
           href={`/orders/${id}/edit`}
           className={cn(
@@ -258,4 +223,3 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
     </div>
   );
 }
-

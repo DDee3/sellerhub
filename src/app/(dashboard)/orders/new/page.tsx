@@ -42,7 +42,12 @@ export default async function NewOrderPage() {
       .order("name", { ascending: true }),
   ]);
 
-  const products = productsRes.data ?? [];
+  const products = (productsRes.data ?? []).map((p) => ({
+    ...p,
+    price: Number(p.price) || 0,
+    stock_qty: Number(p.stock_qty) || 0,
+    deposit_percent: Number(p.deposit_percent) || 0,
+  }));
   const customers = customersRes.data ?? [];
 
   return (
@@ -74,4 +79,3 @@ export default async function NewOrderPage() {
     </div>
   );
 }
-

@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Resolver } from "react-hook-form";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -26,7 +25,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
@@ -78,26 +76,18 @@ export function OrderForm({ products, customers }: OrderFormProps) {
   const { isSubmitting } = form.formState;
 
   const watchedCustomerMode = form.watch("customer_mode");
-  const watchedItems = form.watch("items");
+
+  // Live total calculation using Number() to coerce Supabase numeric strings
+  const items = form.watch("items") ?? [];
+  const total = items.reduce((sum, item) => {
+    const product = products.find((p) => p.id === item.product_id);
+    if (!product) return sum;
+    const qty = Number(item.quantity) || 0;
+    return sum + Number(product.price) * qty;
+  }, 0);
+
   const watchedDepositPaid = form.watch("deposit_paid") || 0;
-
-  const productMap = useMemo(() => {
-    return new Map(products.map((p) => [p.id, p]));
-  }, [products]);
-
-  // Live total calculation
-  const totalAmount = useMemo(() => {
-    return (watchedItems || []).reduce((sum, item) => {
-      const p = productMap.get(item.product_id);
-      const price = p?.price || 0;
-      const qty = Number(item.quantity) || 0;
-      return sum + price * qty;
-    }, 0);
-  }, [watchedItems, productMap]);
-
-  const balanceDue = useMemo(() => {
-    return Math.max(0, totalAmount - (Number(watchedDepositPaid) || 0));
-  }, [totalAmount, watchedDepositPaid]);
+  const balanceDue = Math.max(0, total - (Number(watchedDepositPaid) || 0));
 
   const onSubmit = async (values: OrderFormValues) => {
     try {
@@ -154,7 +144,7 @@ export function OrderForm({ products, customers }: OrderFormProps) {
                         )}
                       >
                         <RadioGroupItem value="existing" id="mode-existing" />
-                        <span>လက်ရှိ ဖောက်သည်</span>
+                        <span>ရှိပြီးသား ဖောက်သည်</span>
                       </label>
                       <label
                         htmlFor="mode-new"
@@ -192,7 +182,18 @@ export function OrderForm({ products, customers }: OrderFormProps) {
                         }}
                       >
                         <SelectTrigger className="h-12 w-full bg-white border-slate-200 text-base">
-                          <SelectValue placeholder="ဖောက်သည် ရွေးချယ်ပါ" />
+                          <span className="truncate">
+                            {field.value
+                              ? (() => {
+                                  const c = customers.find(
+                                    (cust) => cust.id === field.value
+                                  );
+                                  return c
+                                    ? `${c.name}${c.phone ? ` — ${c.phone}` : ""}`
+                                    : "ဖောက်သည် ရွေးချယ်ပါ";
+                                })()
+                              : "ဖောက်သည် ရွေးချယ်ပါ"}
+                          </span>
                         </SelectTrigger>
                         <SelectContent>
                           {customers.length === 0 ? (
@@ -235,45 +236,48 @@ export function OrderForm({ products, customers }: OrderFormProps) {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="new_customer_phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-slate-700">
-                        ဖုန်းနံပါတ် *
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="၀၉xxxxxxxxx"
-                          className="h-12 text-base bg-white border-slate-200"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="new_customer_phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-700">
+                          ဖုန်းနံပါတ် *
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="tel"
+                            placeholder="09..."
+                            className="h-12 text-base bg-white border-slate-200"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="new_customer_facebook"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-slate-700">
-                        Facebook အမည် (စိတ်ကြိုက်)
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Facebook အကောင့်အမည် သို့မဟုတ် Link"
-                          className="h-12 text-base bg-white border-slate-200"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="new_customer_facebook"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-700">
+                          Facebook အကောင့် (ရှိလျှင်)
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="အကောင့်အမည် သို့မဟုတ် Link"
+                            className="h-12 text-base bg-white border-slate-200"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
             )}
           </CardContent>
@@ -354,8 +358,10 @@ export function OrderForm({ products, customers }: OrderFormProps) {
             {fields.map((fieldItem, index) => {
               const currentProductId = form.watch(`items.${index}.product_id`);
               const currentQty = form.watch(`items.${index}.quantity`) || 0;
-              const product = productMap.get(currentProductId);
-              const subtotal = (product?.price || 0) * currentQty;
+              const product = products.find((p) => p.id === currentProductId);
+              const subtotal = product
+                ? Number(product.price) * Number(currentQty)
+                : 0;
 
               return (
                 <div
@@ -378,12 +384,16 @@ export function OrderForm({ products, customers }: OrderFormProps) {
                                 }}
                               >
                                 <SelectTrigger className="h-12 w-full bg-white border-slate-200 text-sm">
-                                  <SelectValue placeholder="ပစ္စည်း ရွေးပါ" />
+                                  <span className="truncate">
+                                    {field.value
+                                      ? products.find((p) => p.id === field.value)?.name ?? "ပစ္စည်း ရွေးပါ"
+                                      : "ပစ္စည်း ရွေးပါ"}
+                                  </span>
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {products.map((p) => (
-                                    <SelectItem key={p.id} value={p.id}>
-                                      {p.name} — {p.price.toLocaleString()} ကျပ်
+                                  {products.map((product) => (
+                                    <SelectItem key={product.id} value={product.id}>
+                                      {product.name} — {Number(product.price).toLocaleString()} ကျပ်
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -408,13 +418,12 @@ export function OrderForm({ products, customers }: OrderFormProps) {
                                 min="1"
                                 placeholder="1"
                                 value={field.value ?? ""}
-                                onChange={(e) =>
+                                onChange={(e) => {
+                                  const val = e.target.value;
                                   field.onChange(
-                                    e.target.value === ""
-                                      ? 1
-                                      : Number(e.target.value)
-                                  )
-                                }
+                                    val === "" ? "" : Number(val)
+                                  );
+                                }}
                                 className="h-12 text-center bg-white border-slate-200 font-semibold"
                               />
                             </FormControl>
@@ -439,7 +448,9 @@ export function OrderForm({ products, customers }: OrderFormProps) {
 
                   {/* Subtotal */}
                   <div className="flex justify-between items-center text-xs text-slate-500 pt-1 border-t border-slate-200/60">
-                    <span>တစ်ခုလျှင်: {product?.price.toLocaleString() || 0} ကျပ်</span>
+                    <span>
+                      တစ်ခုလျှင်: {product ? Number(product.price).toLocaleString() : 0} ကျပ်
+                    </span>
                     <span className="font-semibold text-slate-800 text-sm">
                       စုစုပေါင်း: {subtotal.toLocaleString()} ကျပ်
                     </span>
@@ -452,7 +463,7 @@ export function OrderForm({ products, customers }: OrderFormProps) {
             <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-base font-bold text-slate-900">
               <span>စုစုပေါင်း တန်ဖိုး</span>
               <span className="text-primary text-lg">
-                {totalAmount.toLocaleString()} ကျပ်
+                {total.toLocaleString()} ကျပ်
               </span>
             </div>
           </CardContent>
@@ -512,7 +523,17 @@ export function OrderForm({ products, customers }: OrderFormProps) {
                         }}
                       >
                         <SelectTrigger className="h-12 w-full bg-white border-slate-200 text-base">
-                          <SelectValue placeholder="ငွေပေးချေမှု ရွေးပါ" />
+                          <span>
+                            {field.value === "kbz_pay"
+                              ? "KBZ Pay"
+                              : field.value === "wave_pay"
+                              ? "Wave Pay"
+                              : field.value === "cash"
+                              ? "လက်ငင်း"
+                              : field.value === "cod"
+                              ? "ပို့ချိန်ပေး (COD)"
+                              : "ငွေပေးချေမှု ရွေးပါ"}
+                          </span>
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="kbz_pay">KBZ Pay</SelectItem>
@@ -584,4 +605,3 @@ export function OrderForm({ products, customers }: OrderFormProps) {
     </Form>
   );
 }
-

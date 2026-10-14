@@ -22,11 +22,13 @@ import {
 interface OrderStatusActionsProps {
   orderId: string;
   currentStatus: OrderStatus;
+  orderType: "stock" | "preorder";
 }
 
 export function OrderStatusActions({
   orderId,
   currentStatus,
+  orderType,
 }: OrderStatusActionsProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -36,6 +38,58 @@ export function OrderStatusActions({
   const updateStatus = async (newStatus: OrderStatus) => {
     setIsUpdating(true);
     try {
+      // If cancelling a stock order, restore inventory
+      if (
+        newStatus === "cancelled" &&
+        currentStatus !== "cancelled" &&
+        orderType === "stock"
+      ) {
+        // Fetch order's shop_id
+        const { data: orderData } = await supabase
+          .from("orders")
+          .select("shop_id")
+          .eq("id", orderId)
+          .single();
+
+        // Fetch order items
+        const { data: items, error: itemsErr } = await supabase
+          .from("order_items")
+          .select("product_id, quantity")
+          .eq("order_id", orderId);
+
+        if (itemsErr) {
+          toast.error("ပစ္စည်းစာရင်း ရယူ၍ မရပါ");
+          return;
+        }
+
+        if (items && orderData?.shop_id) {
+          for (const item of items) {
+            if (!item.product_id) continue;
+
+            const { data: prod } = await supabase
+              .from("products")
+              .select("stock_qty")
+              .eq("id", item.product_id)
+              .single();
+
+            if (prod) {
+              await supabase
+                .from("products")
+                .update({ stock_qty: prod.stock_qty + item.quantity })
+                .eq("id", item.product_id);
+
+              await supabase.from("stock_movements").insert({
+                shop_id: orderData.shop_id,
+                product_id: item.product_id,
+                change: item.quantity,
+                reason: "returned",
+                note: `Order ${orderId} cancelled`,
+              });
+            }
+          }
+        }
+      }
+
       const { error } = await supabase
         .from("orders")
         .update({ status: newStatus })
@@ -117,7 +171,9 @@ export function OrderStatusActions({
           <DialogHeader>
             <DialogTitle>အော်ဒါ ပယ်ဖျက်ရန် သေချာပါသလား?</DialogTitle>
             <DialogDescription>
-              ဤအော်ဒါကို ပယ်ဖျက်ပါမည်။ ဤလုပ်ဆောင်ချက်ကို ပြန်လည်ပြင်ဆင်၍ မရနိုင်ပါ။
+              {orderType === "stock"
+                ? "ဤအော်ဒါကို ပယ်ဖျက်ပါမည်။ ပစ္စည်းလက်ကျန်များကို အလိုအလျောက် ပြန်လည်ဖြည့်သွင်းပေးပါမည်။"
+                : "ဤအော်ဒါကို ပယ်ဖျက်ပါမည်။ ဤလုပ်ဆောင်ချက်ကို ပြန်လည်ပြင်ဆင်၍ မရနိုင်ပါ။"}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
@@ -143,4 +199,3 @@ export function OrderStatusActions({
     </div>
   );
 }
-
