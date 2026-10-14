@@ -9,7 +9,6 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
-import type { PaymentMethod } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +17,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import {
   Form,
@@ -28,13 +26,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { cn } from "@/lib/utils";
 
 interface OrderPaymentEditorProps {
   orderId: string;
   depositPaid: number;
   totalPrice: number;
-  paymentMethod: string;
+  paymentMethod: "kbz_pay" | "wave_pay" | "cash" | "cod" | string;
 }
 
 const paymentEditorSchema = z.object({
@@ -61,7 +58,7 @@ export function OrderPaymentEditor({
     ["kbz_pay", "wave_pay", "cash", "cod"].includes(paymentMethod)
       ? paymentMethod
       : "cash"
-  ) as PaymentMethod;
+  ) as "kbz_pay" | "wave_pay" | "cash" | "cod";
 
   const form = useForm<PaymentEditorFormValues>({
     resolver: zodResolver(paymentEditorSchema) as unknown as Resolver<PaymentEditorFormValues>,
@@ -163,7 +160,7 @@ export function OrderPaymentEditor({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-slate-700">
-                    ငွေပေးချေမှု နည်းလမ်း
+                    ငွေပေးချေနည်း
                   </FormLabel>
                   <FormControl>
                     <Select
@@ -173,13 +170,23 @@ export function OrderPaymentEditor({
                       }}
                     >
                       <SelectTrigger className="h-12 w-full bg-white border-slate-200 text-base">
-                        <SelectValue placeholder="ငွေပေးချေမှု ရွေးပါ" />
+                        <span>
+                          {field.value === "kbz_pay"
+                            ? "KBZ Pay"
+                            : field.value === "wave_pay"
+                            ? "Wave Pay"
+                            : field.value === "cash"
+                            ? "လက်ငင်း"
+                            : field.value === "cod"
+                            ? "ပို့ချိန်ပေး"
+                            : "ငွေပေးချေနည်း ရွေးပါ"}
+                        </span>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="kbz_pay">KBZ Pay</SelectItem>
                         <SelectItem value="wave_pay">Wave Pay</SelectItem>
                         <SelectItem value="cash">လက်ငင်း</SelectItem>
-                        <SelectItem value="cod">ပို့ချိန်ပေး (COD)</SelectItem>
+                        <SelectItem value="cod">ပို့ချိန်ပေး</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -189,14 +196,9 @@ export function OrderPaymentEditor({
             />
 
             {/* Live-computed balance due display */}
-            <div className="p-3.5 rounded-lg bg-amber-50/70 border border-amber-200/70 flex items-center justify-between text-sm">
-              <span className="text-amber-800 font-medium">ကျန်ငွေ ပမာဏ</span>
-              <span
-                className={cn(
-                  "font-bold text-base tabular-nums",
-                  balanceDue > 0 ? "text-amber-700" : "text-emerald-700"
-                )}
-              >
+            <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-between text-sm">
+              <span className="text-slate-600 font-medium">ကျန်ငွေ ပမာဏ</span>
+              <span className="font-bold text-base text-slate-900 tabular-nums">
                 {balanceDue.toLocaleString()} ကျပ်
               </span>
             </div>
