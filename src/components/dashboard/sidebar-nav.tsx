@@ -60,14 +60,20 @@ const navItems: NavItem[] = [
 interface SidebarNavProps {
   shopName?: string;
   onNavigate?: () => void;
+  className?: string;
 }
 
-export function SidebarNav({ shopName, onNavigate }: SidebarNavProps) {
+export function SidebarNav({ shopName, onNavigate, className }: SidebarNavProps) {
   const pathname = usePathname();
   const { t } = useLanguage();
 
   return (
-    <div className="flex h-full flex-col justify-between">
+    <aside
+      className={cn(
+        "hidden md:flex flex-col fixed left-4 top-4 bottom-4 w-64 rounded-3xl border border-border bg-background/80 backdrop-blur-xl shadow-lift z-50 p-4 justify-between",
+        className
+      )}
+    >
       {/* Top section: Brand & Navigation */}
       <div className="space-y-6">
         {/* Brand / Logo */}
@@ -103,7 +109,7 @@ export function SidebarNav({ shopName, onNavigate }: SidebarNavProps) {
                 href={item.href}
                 onClick={onNavigate}
                 className={cn(
-                  "group flex items-center gap-3 rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-200",
+                  "group flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm font-medium transition-all duration-200",
                   isActive
                     ? "bg-primary/10 text-primary font-semibold shadow-xs"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -145,7 +151,7 @@ export function SidebarNav({ shopName, onNavigate }: SidebarNavProps) {
           className="w-full justify-center h-10 text-sm font-medium rounded-full hover:bg-muted"
         />
       </div>
-    </div>
+    </aside>
   );
 }
 

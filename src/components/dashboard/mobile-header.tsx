@@ -37,6 +37,7 @@ export function MobileHeader({ shopName }: { shopName?: string }) {
           <SidebarNav
             shopName={shopName}
             onNavigate={() => setOpen(false)}
+            className="flex static w-full h-full border-0 p-0 shadow-none z-auto bg-transparent"
           />
         </SheetContent>
       </Sheet>
