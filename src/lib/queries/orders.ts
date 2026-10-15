@@ -178,9 +178,10 @@ export async function getOrderById(id: string): Promise<OrderDetail | null> {
     .from("shops")
     .select("id")
     .eq("owner_id", user.id)
-    .single();
+    .maybeSingle();
 
   if (!shop) {
+    console.log("[order-detail] no shop found for user:", user.id);
     return null;
   }
 
@@ -192,6 +193,8 @@ export async function getOrderById(id: string): Promise<OrderDetail | null> {
     .eq("id", id)
     .eq("shop_id", shop.id)
     .maybeSingle();
+
+  console.log("[order-detail] id:", id, "shop:", shop.id, "result:", data, "error:", error);
 
   if (error || !data) {
     if (error) console.error("Error fetching order by ID:", error);
