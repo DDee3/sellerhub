@@ -209,16 +209,18 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
           currentStatus={order.status}
           orderType={order.order_type}
         />
-        <Link
-          href={`/orders/${id}/edit`}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "gap-1.5 font-medium"
-          )}
-        >
-          <Pencil className="h-4 w-4" />
-          ပြင်ဆင်
-        </Link>
+        {order.status !== "delivered" && order.status !== "cancelled" && (
+          <Link
+            href={`/orders/${id}/edit`}
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "gap-1.5 font-medium"
+            )}
+          >
+            <Pencil className="h-4 w-4" />
+            ပြင်ဆင်
+          </Link>
+        )}
       </div>
     </div>
   );

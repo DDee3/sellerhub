@@ -44,27 +44,46 @@ export interface OrderFormCustomer {
   phone: string | null;
 }
 
-interface OrderFormProps {
-  products: OrderFormProduct[];
-  customers: OrderFormCustomer[];
+export interface OrderFormInitialValues {
+  items?: { product_id: string; quantity: number }[];
+  deposit_paid?: number;
+  payment_method?: "kbz_pay" | "wave_pay" | "cash" | "cod";
+  note?: string;
+  customer_name?: string;
+  order_type?: "stock" | "preorder";
 }
 
-export function OrderForm({ products, customers }: OrderFormProps) {
+interface OrderFormProps {
+  products: OrderFormProduct[];
+  customers?: OrderFormCustomer[];
+  orderId?: string;
+  initialValues?: OrderFormInitialValues;
+}
+
+export function OrderForm({
+  products,
+  customers = [],
+  orderId,
+  initialValues,
+}: OrderFormProps) {
   const router = useRouter();
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderSchema) as unknown as Resolver<OrderFormValues>,
     defaultValues: {
       customer_mode: "existing",
-      customer_id: customers[0]?.id || "",
+      customer_id: orderId ? "locked" : (customers[0]?.id || ""),
       new_customer_name: "",
       new_customer_phone: "",
       new_customer_facebook: "",
-      order_type: "stock",
-      deposit_paid: "" as unknown as number,
-      payment_method: "kbz_pay",
-      note: "",
-      items: [{ product_id: products[0]?.id || "", quantity: 1 }],
+      order_type: initialValues?.order_type || "stock",
+      deposit_paid: (initialValues?.deposit_paid ?? "") as unknown as number,
+      payment_method: initialValues?.payment_method || "kbz_pay",
+      note: initialValues?.note || "",
+      items:
+        initialValues?.items && initialValues.items.length > 0
+          ? initialValues.items
+          : [{ product_id: products[0]?.id || "", quantity: 1 }],
     },
   });
 
@@ -92,33 +111,67 @@ export function OrderForm({ products, customers }: OrderFormProps) {
 
   const onSubmit = async (values: OrderFormValues) => {
     try {
-      const sanitizedValues: OrderFormValues = {
-        ...values,
-        deposit_paid: Number(values.deposit_paid) || 0,
-        items: values.items.map((item) => ({
-          ...item,
-          quantity: Number(item.quantity) || 1,
-        })),
-      };
+      const sanitizedItems = values.items.map((item) => ({
+        product_id: item.product_id,
+        quantity: Number(item.quantity) || 1,
+      }));
 
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sanitizedValues),
-      });
+      if (orderId) {
+        const payload = {
+          items: sanitizedItems,
+          deposit_paid: Number(values.deposit_paid) || 0,
+          payment_method: values.payment_method,
+          note: values.note || "",
+        };
 
-      const data = await res.json();
+        const res = await fetch(`/api/orders/${orderId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
 
-      if (!res.ok) {
-        toast.error(data.error || "အော်ဒါ ဖန်တီးရာတွင် အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်");
-        return;
+        const data = await res.json();
+
+        if (!res.ok) {
+          toast.error(
+            data.error || "အော်ဒါ ပြင်ဆင်ရာတွင် အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်"
+          );
+          return;
+        }
+
+        toast.success("အော်ဒါ ပြင်ဆင်ပြီးပါပြီ");
+        router.push(`/orders/${orderId}`);
+        router.refresh();
+      } else {
+        const sanitizedValues: OrderFormValues = {
+          ...values,
+          deposit_paid: Number(values.deposit_paid) || 0,
+          items: sanitizedItems,
+        };
+
+        const res = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(sanitizedValues),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          toast.error(
+            data.error || "အော်ဒါ ဖန်တီးရာတွင် အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်"
+          );
+          return;
+        }
+
+        toast.success("အော်ဒါ ဖန်တီးပြီးပါပြီ");
+        router.push(`/orders/${data.id}`);
+        router.refresh();
       }
-
-      toast.success("အော်ဒါ ဖန်တီးပြီးပါပြီ");
-      router.push(`/orders/${data.id}`);
-      router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "ကွန်ရက် အမှား ဖြစ်ပေါ်ခဲ့သည်");
+      toast.error(
+        err instanceof Error ? err.message : "ကွန်ရက် အမှား ဖြစ်ပေါ်ခဲ့သည်"
+      );
     }
   };
 
@@ -126,7 +179,31 @@ export function OrderForm({ products, customers }: OrderFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Section A: Customer */}
-        <Card className="bg-white border-slate-200/80 shadow-xs">
+        {orderId ? (
+          <Card className="bg-white border-slate-200/80 shadow-xs">
+            <CardHeader className="border-b border-slate-100 pb-3">
+              <CardTitle className="text-base font-semibold text-slate-900">
+                ၁။ ဖောက်သည်
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200/60 flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-muted-foreground block">
+                    ဖောက်သည်
+                  </span>
+                  <span className="text-base font-medium text-slate-900 mt-0.5 block">
+                    {initialValues?.customer_name || "—"}
+                  </span>
+                </div>
+                <span className="text-xs text-slate-500 bg-white px-2.5 py-1 rounded-md border border-slate-200 font-medium">
+                  ပြင်ဆင်၍ မရပါ
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="bg-white border-slate-200/80 shadow-xs">
           <CardHeader className="border-b border-slate-100 pb-3">
             <CardTitle className="text-base font-semibold text-slate-900">
               ၁။ ဖောက်သည်
@@ -292,58 +369,61 @@ export function OrderForm({ products, customers }: OrderFormProps) {
             )}
           </CardContent>
         </Card>
+        )}
 
         {/* Section B: Order Type */}
-        <Card className="bg-white border-slate-200/80 shadow-xs">
-          <CardHeader className="border-b border-slate-100 pb-3">
-            <CardTitle className="text-base font-semibold text-slate-900">
-              ၂။ အော်ဒါ အမျိုးအစား
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <FormField
-              control={form.control}
-              name="order_type"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormControl>
-                    <RadioGroup
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      className="grid grid-cols-2 gap-3"
-                    >
-                      <label
-                        htmlFor="type-stock"
-                        className={cn(
-                          "flex items-center gap-2.5 rounded-lg border p-3.5 cursor-pointer text-sm font-medium transition-colors",
-                          field.value === "stock"
-                            ? "border-primary bg-primary/5 text-primary"
-                            : "border-slate-200 bg-white text-slate-700"
-                        )}
+        {!orderId && (
+          <Card className="bg-white border-slate-200/80 shadow-xs">
+            <CardHeader className="border-b border-slate-100 pb-3">
+              <CardTitle className="text-base font-semibold text-slate-900">
+                ၂။ အော်ဒါ အမျိုးအစား
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <FormField
+                control={form.control}
+                name="order_type"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormControl>
+                      <RadioGroup
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        className="grid grid-cols-2 gap-3"
                       >
-                        <RadioGroupItem value="stock" id="type-stock" />
-                        <span>လက်ကျန် (Stock)</span>
-                      </label>
-                      <label
-                        htmlFor="type-preorder"
-                        className={cn(
-                          "flex items-center gap-2.5 rounded-lg border p-3.5 cursor-pointer text-sm font-medium transition-colors",
-                          field.value === "preorder"
-                            ? "border-primary bg-primary/5 text-primary"
-                            : "border-slate-200 bg-white text-slate-700"
-                        )}
-                      >
-                        <RadioGroupItem value="preorder" id="type-preorder" />
-                        <span>ကြိုမှာ (Pre-order)</span>
-                      </label>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
+                        <label
+                          htmlFor="type-stock"
+                          className={cn(
+                            "flex items-center gap-2.5 rounded-lg border p-3.5 cursor-pointer text-sm font-medium transition-colors",
+                            field.value === "stock"
+                              ? "border-primary bg-primary/5 text-primary"
+                              : "border-slate-200 bg-white text-slate-700"
+                          )}
+                        >
+                          <RadioGroupItem value="stock" id="type-stock" />
+                          <span>လက်ကျန် (Stock)</span>
+                        </label>
+                        <label
+                          htmlFor="type-preorder"
+                          className={cn(
+                            "flex items-center gap-2.5 rounded-lg border p-3.5 cursor-pointer text-sm font-medium transition-colors",
+                            field.value === "preorder"
+                              ? "border-primary bg-primary/5 text-primary"
+                              : "border-slate-200 bg-white text-slate-700"
+                          )}
+                        >
+                          <RadioGroupItem value="preorder" id="type-preorder" />
+                          <span>ကြိုမှာ (Pre-order)</span>
+                        </label>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Section C: Items */}
         <Card className="bg-white border-slate-200/80 shadow-xs">
@@ -611,6 +691,8 @@ export function OrderForm({ products, customers }: OrderFormProps) {
           >
             {isSubmitting ? (
               <Loader2 className="h-5 w-5 animate-spin" />
+            ) : orderId ? (
+              "အော်ဒါ ပြင်ဆင်"
             ) : (
               "အော်ဒါ ဖန်တီး"
             )}
