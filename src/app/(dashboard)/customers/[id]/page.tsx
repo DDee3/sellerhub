@@ -4,6 +4,7 @@ import { ArrowLeft, Pencil, Package } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { MyanmarDate } from "@/components/dashboard/myanmar-date";
+import { DeleteCustomerButton } from "@/components/customers/delete-customer-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -148,16 +149,23 @@ export default async function CustomerDetailPage({
           </div>
         </div>
 
-        <Link
-          href={`/customers/${customer.id}/edit`}
-          className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
-            "gap-1.5 bg-white border-slate-200 shadow-xs"
-          )}
-        >
-          <Pencil className="h-3.5 w-3.5" />
-          ပြင်ဆင်မည်
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/customers/${customer.id}/edit`}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "gap-1.5 bg-white border-slate-200 shadow-xs"
+            )}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            ပြင်ဆင်မည်
+          </Link>
+          <DeleteCustomerButton
+            customerId={id}
+            customerName={customer.name}
+            ordersCount={orders.length}
+          />
+        </div>
       </div>
 
       {/* Card A: အချက်အလက် */}
