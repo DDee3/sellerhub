@@ -88,6 +88,10 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
           .eq("id", shipmentId);
 
         if (error) throw error;
+
+        toast.success("သိမ်းဆည်းပြီးပါပြီ");
+        router.push(`/shipments/${shipmentId}`);
+        router.refresh();
       } else {
         const {
           data: { user },
@@ -120,11 +124,11 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
         });
 
         if (error) throw error;
-      }
 
-      toast.success("ပို့ဆောင်မှု သိမ်းပြီးပါပြီ");
-      router.push("/shipments");
-      router.refresh();
+        toast.success("ပို့ဆောင်မှု သိမ်းပြီးပါပြီ");
+        router.push("/shipments");
+        router.refresh();
+      }
     } catch (err: unknown) {
       const message =
         err instanceof Error

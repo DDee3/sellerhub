@@ -51,9 +51,15 @@ export function ShipmentStatusActions({
 
       toast.success("အခြေအနေ ပြောင်းပြီးပါပြီ");
       router.refresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("[status] caught error:", error);
-      toast.error(error?.message ?? "အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်");
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === "object" && error !== null && "message" in error
+          ? String((error as { message: unknown }).message)
+          : "အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်";
+      toast.error(message);
     } finally {
       setIsUpdating(false);
     }
