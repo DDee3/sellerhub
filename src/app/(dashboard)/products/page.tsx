@@ -75,7 +75,7 @@ export default async function ProductsPage({
           href="/products/new"
           className={cn(
             buttonVariants({ variant: "default" }),
-            "flex w-full sm:w-auto h-10 items-center justify-center gap-1.5 px-4 font-medium shadow-xs"
+            "w-full sm:w-auto inline-flex items-center justify-center h-10 gap-1.5 px-4 font-medium shadow-xs"
           )}
         >
           <Plus className="h-4 w-4" />
@@ -86,16 +86,14 @@ export default async function ProductsPage({
       {/* Filters */}
       <ProductFilters />
 
-      {/* Empty state */}
+      {/* Empty state or Products list */}
       {products.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-16 text-center bg-white border-slate-200/80 shadow-xs">
-          <div className="h-14 w-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
-            <Package className="h-7 w-7" />
-          </div>
-          <p className="text-base font-semibold text-slate-700">
-            ပစ္စည်းများ မရှိသေးပါ
+        <Card className="flex flex-col items-center justify-center p-12 text-center bg-white border-slate-200/80 shadow-xs">
+          <Package className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+          <p className="text-base font-medium text-slate-700">
+            ပစ္စည်း မရှိသေးပါ
           </p>
-          <p className="text-sm text-slate-400 mt-1 max-w-xs">
+          <p className="text-sm text-muted-foreground mt-1 max-w-xs">
             {params.q || params.type !== undefined || params.active !== undefined
               ? "ရှာဖွေမှု ကိုက်ညီသော ပစ္စည်း မတွေ့ပါ"
               : '"အသစ်ထည့်" ကိုနှိပ်၍ ပစ္စည်းအသစ် ထည့်ပါ'}
@@ -109,7 +107,7 @@ export default async function ProductsPage({
               href={`/products/${product.id}`}
               className="block group"
             >
-              <div className="p-3 flex items-center gap-3 hover:bg-slate-50 transition rounded-xl border bg-white border-slate-200/80 shadow-xs cursor-pointer">
+              <div className="p-3 flex items-center gap-3 rounded-xl border bg-white border-slate-200/80 hover:bg-slate-50 transition-colors shadow-xs cursor-pointer">
                 {/* LEFT */}
                 <ProductThumbnail
                   src={product.image_url}
@@ -118,7 +116,7 @@ export default async function ProductsPage({
                 />
 
                 {/* MIDDLE */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-center min-w-0">
                     <span className="font-medium text-base text-slate-900 truncate">
                       {product.name}

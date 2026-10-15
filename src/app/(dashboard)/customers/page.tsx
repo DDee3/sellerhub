@@ -22,12 +22,12 @@ export default async function CustomersPage({
   return (
     <div className="space-y-5 pb-10">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             ဝယ်ယူသူများ
           </h1>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <p className="text-sm text-muted-foreground mt-0.5">
             {customers.length} ဦး
           </p>
         </div>
@@ -35,7 +35,7 @@ export default async function CustomersPage({
           href="/customers/new"
           className={cn(
             buttonVariants({ variant: "default" }),
-            "h-10 gap-1.5 px-4 font-medium shadow-xs"
+            "w-full sm:w-auto inline-flex items-center justify-center h-10 gap-1.5 px-4 font-medium shadow-xs"
           )}
         >
           <Plus className="h-4 w-4" />
@@ -48,11 +48,9 @@ export default async function CustomersPage({
 
       {/* Empty state or Customers List */}
       {customers.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-16 text-center bg-white border-slate-200/80 shadow-xs">
-          <div className="h-14 w-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
-            <Users className="h-7 w-7" />
-          </div>
-          <p className="text-base font-semibold text-slate-700">
+        <Card className="flex flex-col items-center justify-center p-12 text-center bg-white border-slate-200/80 shadow-xs">
+          <Users className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+          <p className="text-base font-medium text-slate-700">
             ဝယ်ယူသူ မရှိသေးပါ
           </p>
           <p className="text-sm text-muted-foreground mt-1 max-w-xs">
@@ -78,15 +76,15 @@ export default async function CustomersPage({
                 href={`/customers/${customer.id}`}
                 className="block group"
               >
-                <div className="p-3 flex items-center gap-3 hover:bg-slate-50 transition rounded-xl border border-slate-200/80 bg-white shadow-xs cursor-pointer">
-                  {/* LEFT: circle avatar with first letter */}
+                <div className="p-3 flex items-center gap-3 rounded-xl border bg-white border-slate-200/80 hover:bg-slate-50 transition-colors shadow-xs cursor-pointer">
+                  {/* LEFT: 44px circle avatar */}
                   <div className="h-11 w-11 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-semibold text-base shrink-0 select-none">
                     {initial}
                   </div>
 
-                  {/* MIDDLE: Name & Phone / Facebook */}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-base text-slate-900 truncate group-hover:text-blue-600 transition">
+                  {/* MIDDLE */}
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="font-medium text-base text-slate-900 truncate">
                       {customer.name}
                     </p>
                     <p className="text-sm text-muted-foreground truncate mt-0.5">
@@ -95,7 +93,7 @@ export default async function CustomersPage({
                     </p>
                   </div>
 
-                  {/* RIGHT: Orders count & Outstanding Balance */}
+                  {/* RIGHT */}
                   <div className="text-right shrink-0">
                     <p className="text-xs text-muted-foreground">
                       {customer.orders_count} အော်ဒါ

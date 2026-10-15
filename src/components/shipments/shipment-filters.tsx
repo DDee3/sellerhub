@@ -9,8 +9,16 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
+
+const statusLabels: Record<string, string> = {
+  all: "အားလုံး",
+  ordering: "မှာယူနေ",
+  in_transit: "လမ်းပေါ်",
+  arrived: "ရောက်ပြီ",
+  delivering: "ပို့နေ",
+  completed: "ပြီးစီး",
+};
 
 export function ShipmentFilters() {
   const router = useRouter();
@@ -52,15 +60,15 @@ export function ShipmentFilters() {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3">
+    <div className="flex flex-col sm:flex-row gap-2">
       {/* Search input */}
-      <div className="relative flex-1">
+      <div className="relative flex-1 min-w-0">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
         <Input
           value={search}
           onChange={handleSearchChange}
-          placeholder="အမည်ရှာဖွေ..."
-          className="h-12 pl-9 text-base bg-white border-slate-200"
+          placeholder="ပို့ဆောင်မှု အမည် ရှာဖွေ..."
+          className="h-11 pl-9 text-base bg-white border-slate-200"
         />
       </div>
 
@@ -71,8 +79,8 @@ export function ShipmentFilters() {
           updateParams({ status: value ?? "all" })
         }
       >
-        <SelectTrigger className="h-12 min-w-44 bg-white border-slate-200 text-base">
-          <SelectValue placeholder="အခြေအနေ" />
+        <SelectTrigger className="h-11 w-full sm:w-[140px] bg-white border-slate-200 text-sm">
+          <span>{statusLabels[currentStatus] ?? "အားလုံး"}</span>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">အားလုံး</SelectItem>
@@ -86,4 +94,3 @@ export function ShipmentFilters() {
     </div>
   );
 }
-

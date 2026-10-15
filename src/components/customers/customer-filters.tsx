@@ -41,15 +41,16 @@ export function CustomerFilters() {
   };
 
   return (
-    <div className="relative">
-      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-      <Input
-        value={search}
-        onChange={handleSearchChange}
-        placeholder="အမည် / ဖုန်း / Facebook ရှာဖွေ..."
-        className="h-12 pl-10 text-base bg-white border-slate-200 shadow-xs"
-      />
+    <div className="flex flex-col sm:flex-row gap-2">
+      <div className="relative flex-1 min-w-0">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+        <Input
+          value={search}
+          onChange={handleSearchChange}
+          placeholder="အမည် / ဖုန်း / Facebook ရှာဖွေ..."
+          className="h-11 pl-9 text-base bg-white border-slate-200"
+        />
+      </div>
     </div>
   );
 }
-
