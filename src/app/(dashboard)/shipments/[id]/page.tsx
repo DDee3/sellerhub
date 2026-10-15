@@ -11,6 +11,8 @@ import type { OrderStatus } from "@/lib/queries/orders";
 import { MyanmarDate } from "@/components/dashboard/myanmar-date";
 import { AssignOrdersButton } from "@/components/shipments/assign-orders-button";
 import { ShipmentStatusActions } from "@/components/shipments/shipment-status-actions";
+import { RemoveOrderButton } from "@/components/shipments/remove-order-button";
+import { DeleteShipmentButton } from "@/components/shipments/delete-shipment-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -141,16 +143,21 @@ export default async function ShipmentDetailPage({
           </div>
         </div>
 
-        <Link
-          href={`/shipments/${shipment.id}/edit`}
-          className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
-            "gap-1.5 bg-white border-slate-200"
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/shipments/${shipment.id}/edit`}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "gap-1.5 bg-white border-slate-200"
+            )}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            ပြင်ဆင်မည်
+          </Link>
+          {shipment.orders.length === 0 && (
+            <DeleteShipmentButton shipmentId={shipment.id} />
           )}
-        >
-          <Pencil className="h-3.5 w-3.5" />
-          ပြင်ဆင်မည်
-        </Link>
+        </div>
       </div>
 
       {/* Shipment Status Actions */}
@@ -239,14 +246,16 @@ export default async function ShipmentDetailPage({
           ) : (
             <div className="space-y-2">
               {shipment.orders.map((order) => (
-                <Link
+                <div
                   key={order.id}
-                  href={`/orders/${order.id}`}
-                  className="block group"
+                  className="p-3 rounded-lg border border-slate-200/80 bg-white hover:bg-slate-50 transition shadow-xs flex items-center justify-between gap-3 group"
                 >
-                  <div className="p-3 rounded-lg border border-slate-200/80 bg-white hover:bg-slate-50 transition shadow-xs cursor-pointer">
+                  <Link
+                    href={`/orders/${order.id}`}
+                    className="min-w-0 flex-1 block"
+                  >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium text-slate-900 truncate">
+                      <span className="font-medium text-slate-900 truncate group-hover:text-blue-600 transition">
                         {order.customer_name}
                       </span>
                       <span className="font-semibold text-slate-900 shrink-0">
@@ -266,8 +275,11 @@ export default async function ShipmentDetailPage({
                         </span>
                       )}
                     </div>
+                  </Link>
+                  <div className="shrink-0 pl-1 border-l border-slate-100">
+                    <RemoveOrderButton orderId={order.id} />
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           )}
