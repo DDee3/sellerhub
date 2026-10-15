@@ -10,6 +10,7 @@ import {
 import type { OrderStatus } from "@/lib/queries/orders";
 import { MyanmarDate } from "@/components/dashboard/myanmar-date";
 import { AssignOrdersButton } from "@/components/shipments/assign-orders-button";
+import { ShipmentStatusActions } from "@/components/shipments/shipment-status-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -151,6 +152,12 @@ export default async function ShipmentDetailPage({
           ပြင်ဆင်မည်
         </Link>
       </div>
+
+      {/* Shipment Status Actions */}
+      <ShipmentStatusActions
+        shipmentId={id}
+        currentStatus={shipment.status}
+      />
 
       {/* Card A: Info */}
       <Card className="bg-white border-slate-200/80 shadow-xs">
