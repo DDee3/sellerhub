@@ -4,20 +4,22 @@ import { TopBar } from "@/components/dashboard/top-bar";
 import { MobileHeader } from "@/components/dashboard/mobile-header";
 import { AuthGate } from "@/components/dashboard/auth-gate";
 
+import { DashboardContentWrapper } from "@/components/dashboard/dashboard-content-wrapper";
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-background flex flex-col md:flex-row">
       <Suspense fallback={null}>
         <AuthGate />
       </Suspense>
 
       {/* Desktop Sidebar (hidden below md) */}
-      <aside className="hidden md:flex w-64 lg:w-72 flex-col border-r border-slate-200/80 bg-white p-4 lg:p-6 shrink-0 h-screen sticky top-0">
-        <Suspense fallback={<div className="w-full h-full bg-white" />}>
+      <aside className="hidden md:flex w-64 lg:w-72 flex-col border-r border-border/60 bg-card p-4 lg:p-6 shrink-0 h-screen sticky top-0 z-20">
+        <Suspense fallback={<div className="w-full h-full bg-card" />}>
           <SidebarNav />
         </Suspense>
       </aside>
@@ -25,21 +27,21 @@ export default function DashboardLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile Header (visible below md) */}
-        <Suspense fallback={<div className="h-14 bg-white border-b border-slate-200/80" />}>
+        <Suspense fallback={<div className="h-14 bg-card border-b border-border/60" />}>
           <MobileHeader />
         </Suspense>
 
         {/* Desktop Top Bar (hidden below md) */}
-        <Suspense fallback={<div className="h-16 bg-white border-b border-slate-200/80" />}>
+        <Suspense fallback={<div className="h-16 bg-card border-b border-border/60" />}>
           <TopBar />
         </Suspense>
 
         {/* Page Content */}
-        <main className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full flex-1">
+        <DashboardContentWrapper>
           <Suspense fallback={null}>
             {children}
           </Suspense>
-        </main>
+        </DashboardContentWrapper>
       </div>
     </div>
   );
