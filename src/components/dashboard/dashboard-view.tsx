@@ -72,12 +72,12 @@ export function DashboardView({
   return (
     <div key={language} className="space-y-6 pb-8">
       {/* 1. Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-4 mb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             <Greeting name={shop.name} />
           </h1>
-          <p className="text-sm font-medium text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-0.5">
             <MyanmarDate />
           </p>
         </div>
@@ -88,7 +88,7 @@ export function DashboardView({
             href="/orders/new"
             className={cn(
               buttonVariants({ variant: "default" }),
-              "gap-2 h-10 px-5 font-semibold rounded-full shadow-soft hover:shadow-lift"
+              "gap-2 h-9 px-4 text-sm font-semibold rounded-full shadow-soft hover:shadow-lift"
             )}
           >
             <Plus className="h-4 w-4" />
@@ -98,7 +98,7 @@ export function DashboardView({
             href="/shipments/new"
             className={cn(
               buttonVariants({ variant: "outline" }),
-              "gap-2 h-10 px-5 font-semibold rounded-full shadow-soft hover:shadow-lift bg-background"
+              "gap-2 h-9 px-4 text-sm font-semibold rounded-full shadow-soft hover:shadow-lift bg-background"
             )}
           >
             <Plus className="h-4 w-4" />
@@ -108,97 +108,97 @@ export function DashboardView({
       </div>
 
       {/* 2. Stat Cards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Active Shipments */}
-        <Card className="rounded-2xl border-border/60 bg-card p-1 shadow-soft" hoverLift>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+        <div className="relative rounded-2xl border border-border/60 bg-card py-4 px-5 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-lift flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               {t("dashboard.active_shipments")}
-            </CardTitle>
-            <div className="p-2.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
+            </span>
+            <div className="p-1.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
               <Truck className="h-4 w-4" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground tabular-nums">
+          </div>
+          <div className="mt-1">
+            <div className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
               {stats.activeShipments}
             </div>
-            <p className="text-xs text-muted-foreground mt-1 truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {t("dashboard.active_shipments_sub")}
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Pending Orders */}
-        <Card className="rounded-2xl border-border/60 bg-card p-1 shadow-soft" hoverLift>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+        <div className="relative rounded-2xl border border-border/60 bg-card py-4 px-5 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-lift flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               {t("dashboard.pending_orders")}
-            </CardTitle>
-            <div className="p-2.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            </span>
+            <div className="p-1.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
               <ShoppingCart className="h-4 w-4" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground tabular-nums">
+          </div>
+          <div className="mt-1">
+            <div className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
               {stats.pendingOrders}
             </div>
-            <p className="text-xs text-muted-foreground mt-1 truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {t("dashboard.pending_orders_sub")}
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Unpaid Balance */}
-        <Card className="rounded-2xl border-border/60 bg-card p-1 shadow-soft" hoverLift>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
+        <div className="relative rounded-2xl border border-border/60 bg-card py-4 px-5 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-lift flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">
               {t("dashboard.unpaid_balance")}
-            </CardTitle>
-            <div className="p-2.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <span className="text-xs font-bold leading-none">MMK</span>
+            </span>
+            <div className="p-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
+              <span className="text-[10px] font-bold leading-none">MMK</span>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-2xl font-bold tracking-tight text-foreground tabular-nums truncate">
+          </div>
+          <div className="mt-1">
+            <div className="text-2xl font-bold tracking-tight text-foreground tabular-nums truncate">
               {stats.unpaidBalance.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground mt-1 truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {t("dashboard.unpaid_balance_sub")}
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Low Stock Items */}
-        <Card className="rounded-2xl border-border/60 bg-card p-1 shadow-soft" hoverLift>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+        <div className="relative rounded-2xl border border-border/60 bg-card py-4 px-5 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-lift flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               {t("dashboard.low_stock")}
-            </CardTitle>
-            <div className="p-2.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400">
+            </span>
+            <div className="p-1.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 shrink-0">
               <AlertTriangle className="h-4 w-4" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground tabular-nums">
+          </div>
+          <div className="mt-1">
+            <div className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
               {stats.lowStockCount}
             </div>
-            <p className="text-xs text-muted-foreground mt-1 truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {t("dashboard.low_stock_sub")}
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* 3. Two column grid on lg */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Left: Upcoming Shipments */}
-        <Card className="rounded-2xl border-border/60 bg-card shadow-soft flex flex-col" hoverLift>
-          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-border/50">
+        <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-lift">
+          <div className="flex items-center justify-between border-b border-border/50 pb-3 mb-3">
             <div>
-              <CardTitle className="text-base font-bold text-foreground">
+              <h2 className="text-sm font-semibold text-foreground">
                 {t("dashboard.upcoming_shipments")}
-              </CardTitle>
+              </h2>
               <p className="text-xs text-muted-foreground">
                 {t("dashboard.upcoming_shipments_sub")}
               </p>
@@ -210,22 +210,16 @@ export function DashboardView({
               {t("dashboard.view_all")}
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
-          </CardHeader>
-          <CardContent className="pt-4 flex-1">
+          </div>
+          <div>
             {upcomingShipments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center select-none">
-                <div className="h-16 w-16 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground/60 mb-3 shadow-inner">
-                  <Inbox className="h-8 w-8 text-muted-foreground/50" />
-                </div>
-                <p className="text-sm font-semibold text-muted-foreground">
-                  {t("dashboard.no_shipments_today")}
-                </p>
-                <p className="text-xs text-muted-foreground/70 mt-1">
-                  {t("dashboard.no_shipments_sub")}
+              <div className="py-6 text-center select-none">
+                <p className="text-xs font-medium text-muted-foreground">
+                  {t("dashboard.no_shipments_today")} — {t("dashboard.no_shipments_sub")}
                 </p>
               </div>
             ) : (
-              <div className="space-y-1">
+              <div className="flex flex-col gap-2">
                 {upcomingShipments.map((s) => (
                   <div
                     key={s.id}
@@ -245,16 +239,16 @@ export function DashboardView({
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Right: Low Stock Products */}
-        <Card className="rounded-2xl border-border/60 bg-card shadow-soft flex flex-col" hoverLift>
-          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-border/50">
+        <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-lift">
+          <div className="flex items-center justify-between border-b border-border/50 pb-3 mb-3">
             <div>
-              <CardTitle className="text-base font-bold text-foreground">
+              <h2 className="text-sm font-semibold text-foreground">
                 {t("dashboard.low_stock_title")}
-              </CardTitle>
+              </h2>
               <p className="text-xs text-muted-foreground">
                 {t("dashboard.low_stock_title_sub")}
               </p>
@@ -266,22 +260,16 @@ export function DashboardView({
               {t("dashboard.view_all")}
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
-          </CardHeader>
-          <CardContent className="pt-4 flex-1">
+          </div>
+          <div>
             {lowStockProducts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center select-none">
-                <div className="h-16 w-16 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground/60 mb-3 shadow-inner">
-                  <Package className="h-8 w-8 text-muted-foreground/50" />
-                </div>
-                <p className="text-sm font-semibold text-muted-foreground">
-                  {t("dashboard.no_shipments_today")}
-                </p>
-                <p className="text-xs text-muted-foreground/70 mt-1">
-                  {t("dashboard.no_low_stock")}
+              <div className="py-6 text-center select-none">
+                <p className="text-xs font-medium text-muted-foreground">
+                  {t("dashboard.no_shipments_today")} — {t("dashboard.no_low_stock")}
                 </p>
               </div>
             ) : (
-              <div className="space-y-1">
+              <div className="flex flex-col gap-2">
                 {lowStockProducts.map((p) => (
                   <div
                     key={p.id}
@@ -307,8 +295,8 @@ export function DashboardView({
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

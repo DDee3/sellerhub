@@ -10,19 +10,21 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-
-const statusLabels: Record<string, string> = {
-  all: "အားလုံး",
-  pending: "စောင့်ဆိုင်း",
-  confirmed: "အတည်ပြု",
-  delivered: "ပေးပြီး",
-  cancelled: "ပယ်ဖျက်",
-};
+import { useLanguage } from "@/components/providers/language-provider";
 
 export function OrderFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
+
+  const statusLabels: Record<string, string> = {
+    all: t("all"),
+    pending: t("orders.status_pending"),
+    confirmed: t("orders.status_confirmed"),
+    delivered: t("orders.status_delivered"),
+    cancelled: t("orders.status_cancelled"),
+  };
 
   const currentQ = searchParams.get("q") ?? "";
   const currentStatus = searchParams.get("status") ?? "all";
@@ -62,12 +64,12 @@ export function OrderFilters() {
     <div className="flex flex-col sm:flex-row gap-2">
       {/* Search input */}
       <div className="relative flex-1 min-w-0">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
           value={search}
           onChange={handleSearchChange}
-          placeholder="ဖောက်သည် အမည် ရှာဖွေ..."
-          className="h-11 pl-9 text-base bg-white border-slate-200"
+          placeholder={t("orders.search_placeholder")}
+          className="h-10 pl-9 text-sm bg-card border-border rounded-xl"
         />
       </div>
 
@@ -78,17 +80,19 @@ export function OrderFilters() {
           updateParams({ status: value ?? "all" })
         }
       >
-        <SelectTrigger className="h-11 w-full sm:w-[140px] bg-white border-slate-200 text-sm">
-          <span>{statusLabels[currentStatus] ?? "အားလုံး"}</span>
+        <SelectTrigger className="h-10 w-full sm:w-[140px] bg-card border-border text-sm rounded-xl">
+          <span>{statusLabels[currentStatus] ?? t("all")}</span>
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">အားလုံး</SelectItem>
-          <SelectItem value="pending">စောင့်ဆိုင်း</SelectItem>
-          <SelectItem value="confirmed">အတည်ပြု</SelectItem>
-          <SelectItem value="delivered">ပေးပြီး</SelectItem>
-          <SelectItem value="cancelled">ပယ်ဖျက်</SelectItem>
+        <SelectContent className="rounded-xl">
+          <SelectItem value="all">{t("all")}</SelectItem>
+          <SelectItem value="pending">{t("orders.status_pending")}</SelectItem>
+          <SelectItem value="confirmed">{t("orders.status_confirmed")}</SelectItem>
+          <SelectItem value="delivered">{t("orders.status_delivered")}</SelectItem>
+          <SelectItem value="cancelled">{t("orders.status_cancelled")}</SelectItem>
         </SelectContent>
       </Select>
     </div>
   );
 }
+
+export default OrderFilters;

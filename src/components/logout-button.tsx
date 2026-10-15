@@ -7,17 +7,22 @@ import { LogOut, Loader2 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/components/providers/language-provider";
+import { cn } from "@/lib/utils";
 
 interface LogoutButtonProps {
   className?: string;
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  isExpanded?: boolean;
 }
 
 export function LogoutButton({
   className,
-  variant = "outline",
+  variant = "ghost",
+  isExpanded = true,
 }: LogoutButtonProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
@@ -27,15 +32,15 @@ export function LogoutButton({
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
-        toast.error(error.message || "အကောင့်ထွက်ရန် မအောင်မြင်ပါ");
+        toast.error(error.message || t("error") || "Error logging out");
         return;
       }
 
-      toast.success("အကောင့်မှ ထွက်ပြီးပါပြီ");
+      toast.success(t("logout"));
       router.push("/login");
       router.refresh();
-    } catch (err: unknown) {
-      toast.error("တစ်ခုခု မှားယွင်းနေပါသည်။ ထပ်မံကြိုးစားကြည့်ပါ။");
+    } catch {
+      toast.error("Error logging out");
     } finally {
       setIsLoading(false);
     }
@@ -46,17 +51,21 @@ export function LogoutButton({
       variant={variant}
       onClick={handleLogout}
       disabled={isLoading}
-      className={className}
+      aria-label={t("logout")}
+      className={cn(
+        "text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors duration-200",
+        isExpanded ? "w-full justify-start px-3 gap-2" : "justify-center px-0 w-9 h-9",
+        className
+      )}
     >
       {isLoading ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <Loader2 className="h-4 w-4 animate-spin shrink-0" />
       ) : (
-        <LogOut className="mr-2 h-4 w-4" />
+        <LogOut className="h-4 w-4 shrink-0" />
       )}
-      ထွက်ရန်
+      {isExpanded && <span className="truncate">{t("logout")}</span>}
     </Button>
   );
 }
 
 export default LogoutButton;
-

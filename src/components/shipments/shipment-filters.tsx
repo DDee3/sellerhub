@@ -10,20 +10,22 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-
-const statusLabels: Record<string, string> = {
-  all: "အားလုံး",
-  ordering: "မှာယူနေ",
-  in_transit: "လမ်းပေါ်",
-  arrived: "ရောက်ပြီ",
-  delivering: "ပို့နေ",
-  completed: "ပြီးစီး",
-};
+import { useLanguage } from "@/components/providers/language-provider";
 
 export function ShipmentFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
+
+  const statusLabels: Record<string, string> = {
+    all: t("all"),
+    ordering: t("shipments.status_ordering"),
+    in_transit: t("shipments.status_in_transit"),
+    arrived: t("shipments.status_arrived"),
+    delivering: t("shipments.status_delivering"),
+    completed: t("shipments.status_completed"),
+  };
 
   const currentQ = searchParams.get("q") ?? "";
   const currentStatus = searchParams.get("status") ?? "all";
@@ -63,12 +65,12 @@ export function ShipmentFilters() {
     <div className="flex flex-col sm:flex-row gap-2">
       {/* Search input */}
       <div className="relative flex-1 min-w-0">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
           value={search}
           onChange={handleSearchChange}
-          placeholder="ပို့ဆောင်မှု အမည် ရှာဖွေ..."
-          className="h-11 pl-9 text-base bg-white border-slate-200"
+          placeholder={t("shipments.search_placeholder")}
+          className="h-10 pl-9 text-sm bg-card border-border rounded-xl"
         />
       </div>
 
@@ -79,18 +81,20 @@ export function ShipmentFilters() {
           updateParams({ status: value ?? "all" })
         }
       >
-        <SelectTrigger className="h-11 w-full sm:w-[140px] bg-white border-slate-200 text-sm">
-          <span>{statusLabels[currentStatus] ?? "အားလုံး"}</span>
+        <SelectTrigger className="h-10 w-full sm:w-[140px] bg-card border-border text-sm rounded-xl">
+          <span>{statusLabels[currentStatus] ?? t("all")}</span>
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">အားလုံး</SelectItem>
-          <SelectItem value="ordering">မှာယူနေ</SelectItem>
-          <SelectItem value="in_transit">လမ်းပေါ်</SelectItem>
-          <SelectItem value="arrived">ရောက်ပြီ</SelectItem>
-          <SelectItem value="delivering">ပို့နေ</SelectItem>
-          <SelectItem value="completed">ပြီးစီး</SelectItem>
+        <SelectContent className="rounded-xl">
+          <SelectItem value="all">{t("all")}</SelectItem>
+          <SelectItem value="ordering">{t("shipments.status_ordering")}</SelectItem>
+          <SelectItem value="in_transit">{t("shipments.status_in_transit")}</SelectItem>
+          <SelectItem value="arrived">{t("shipments.status_arrived")}</SelectItem>
+          <SelectItem value="delivering">{t("shipments.status_delivering")}</SelectItem>
+          <SelectItem value="completed">{t("shipments.status_completed")}</SelectItem>
         </SelectContent>
       </Select>
     </div>
   );
 }
+
+export default ShipmentFilters;

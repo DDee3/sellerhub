@@ -2,9 +2,9 @@
 
 import { usePathname } from "next/navigation";
 import { Bell } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { UserAvatarDropdown } from "@/components/dashboard/user-avatar-dropdown";
 import { useLanguage } from "@/components/providers/language-provider";
 import type { DictKey } from "@/lib/i18n/dictionary";
 
@@ -52,13 +52,9 @@ export function TopBar({ shopName }: { shopName?: string }) {
           </Button>
         </div>
 
-        {/* User / Shop Avatar */}
+        {/* User / Shop Avatar Dropdown */}
         <div className="flex items-center gap-3 pl-2 border-l border-border/60">
-          <Avatar className="h-9 w-9 bg-primary/10 text-primary border border-primary/20 hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer">
-            <AvatarFallback className="text-xs font-semibold">
-              {shopName ? shopName.slice(0, 2).toUpperCase() : "SH"}
-            </AvatarFallback>
-          </Avatar>
+          <UserAvatarDropdown shopName={shopName} />
           <span className="text-sm font-medium text-foreground hidden lg:inline">
             {shopName}
           </span>
