@@ -29,7 +29,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 const STORAGE_KEY = "sellerhub-lang";
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("my");
+  const [language, setLanguageState] = useState<Language>("en");
   const [mounted, setMounted] = useState(false);
 
   // Read saved language from localStorage on mount
@@ -60,7 +60,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const t = useCallback(
     (key: DictKey | string): string => {
       const dictForLang = dictionary[language] as Record<string, string> | undefined;
-      return dictForLang?.[key] ?? (dictionary.en as Record<string, string>)[key] ?? key;
+      const dictEn = dictionary["en"] as Record<string, string> | undefined;
+      return dictForLang?.[key] ?? dictEn?.[key] ?? key;
     },
     [language]
   );
