@@ -447,112 +447,139 @@ export function OrderForm({
             </Button>
           </CardHeader>
           <CardContent className="pt-4 space-y-3">
-            {fields.map((fieldItem, index) => {
-              const currentProductId = form.watch(`items.${index}.product_id`);
-              const currentQty = form.watch(`items.${index}.quantity`);
-              const product = products.find((p) => p.id === currentProductId);
-              const qty = Number(currentQty) || 0;
-              const subtotal = product
-                ? Number(product.price) * qty
-                : 0;
+            {fields.length === 0 ? (
+              <div className="text-center py-8 text-sm text-muted-foreground border border-dashed border-border rounded-xl">
+                {t("orders.form.no_items")}
+              </div>
+            ) : (
+              fields.map((fieldItem, index) => {
+                const currentProductId = form.watch(`items.${index}.product_id`);
+                const currentQty = form.watch(`items.${index}.quantity`);
+                const product = products.find((p) => p.id === currentProductId);
+                const qty = Number(currentQty) || 0;
+                const subtotal = product
+                  ? Number(product.price) * qty
+                  : 0;
 
-              return (
-                <div
-                  key={fieldItem.id}
-                  className="p-3.5 rounded-xl border border-border bg-muted/40 space-y-3"
-                >
-                  <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                    {/* Select product */}
-                    <div className="flex-1 w-full">
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.product_id`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Select
-                                value={field.value}
-                                onValueChange={(val: string | null) => {
-                                  if (val) field.onChange(val);
-                                }}
-                              >
-                                <SelectTrigger className="h-11 w-full bg-background text-foreground border-input text-sm rounded-xl">
-                                  <span className="truncate">
-                                    {field.value
-                                      ? products.find((p) => p.id === field.value)?.name ?? t("orders.form.select_product")
-                                      : t("orders.form.select_product")}
-                                  </span>
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                  {products.map((p) => (
-                                    <SelectItem key={p.id} value={p.id}>
-                                      {p.name} — {Number(p.price).toLocaleString()} MMK
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                return (
+                  <div
+                    key={fieldItem.id}
+                    className="p-3.5 rounded-xl border border-border bg-muted/40 space-y-3"
+                  >
+                    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                      {/* Select product */}
+                      <div className="flex-1 w-full">
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.product_id`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Select
+                                  value={field.value}
+                                  onValueChange={(val: string | null) => {
+                                    if (val) field.onChange(val);
+                                  }}
+                                >
+                                  <SelectTrigger className="h-11 w-full bg-background text-foreground border-input text-sm rounded-xl">
+                                    <span className="truncate">
+                                      {field.value
+                                        ? products.find((p) => p.id === field.value)?.name ?? t("orders.form.select_product")
+                                        : t("orders.form.select_product")}
+                                    </span>
+                                  </SelectTrigger>
+                                  <SelectContent className="rounded-xl max-h-72">
+                                    {products.map((p) => (
+                                      <SelectItem key={p.id} value={p.id} className="cursor-pointer">
+                                        <div className="flex items-center justify-between gap-3 w-full">
+                                          <div className="flex items-center gap-2 min-w-0">
+                                            <span className="truncate font-medium">{p.name}</span>
+                                            {p.type === "stock" && (
+                                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/15 text-blue-600 dark:text-blue-400 shrink-0">
+                                                In Stock
+                                              </span>
+                                            )}
+                                            {p.type === "preorder" && (
+                                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/15 text-purple-600 dark:text-purple-400 shrink-0">
+                                                Preorder
+                                              </span>
+                                            )}
+                                            {p.type === "hybrid" && (
+                                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0">
+                                                Hybrid
+                                              </span>
+                                            )}
+                                          </div>
+                                          <span className="text-xs text-muted-foreground font-semibold shrink-0">
+                                            {Number(p.price).toLocaleString()} MMK
+                                          </span>
+                                        </div>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {/* Quantity + Remove */}
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.quantity`}
+                          render={({ field }) => (
+                            <FormItem className="w-28 sm:w-24">
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  inputMode="numeric"
+                                  step="any"
+                                  min="1"
+                                  placeholder="1"
+                                  value={field.value ?? ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    field.onChange(
+                                      val === "" ? "" : Number(val)
+                                    );
+                                  }}
+                                  className="h-11 text-center bg-background text-foreground border-input font-semibold rounded-xl"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => remove(index)}
+                          className="h-11 w-11 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0 rounded-xl"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">{t("delete")}</span>
+                        </Button>
+                      </div>
                     </div>
 
-                    {/* Quantity + Remove */}
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.quantity`}
-                        render={({ field }) => (
-                          <FormItem className="w-28 sm:w-24">
-                            <FormControl>
-                              <Input
-                                type="number"
-                                inputMode="numeric"
-                                step="any"
-                                min="1"
-                                placeholder="1"
-                                value={field.value ?? ""}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  field.onChange(
-                                    val === "" ? "" : Number(val)
-                                  );
-                                }}
-                                className="h-11 text-center bg-background text-foreground border-input font-semibold rounded-xl"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        disabled={fields.length <= 1}
-                        onClick={() => remove(index)}
-                        className="h-11 w-11 text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-30 shrink-0 rounded-xl"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">{t("delete")}</span>
-                      </Button>
+                    {/* Subtotal */}
+                    <div className="flex justify-between items-center text-xs text-muted-foreground pt-1 border-t border-border/60">
+                      <span>
+                        {t("orders.form.unit_price")} {product ? Number(product.price).toLocaleString() : 0} MMK
+                      </span>
+                      <span className="font-semibold text-foreground text-sm">
+                        {t("orders.form.subtotal")} {subtotal.toLocaleString()} MMK
+                      </span>
                     </div>
                   </div>
-
-                  {/* Subtotal */}
-                  <div className="flex justify-between items-center text-xs text-muted-foreground pt-1 border-t border-border/60">
-                    <span>
-                      {t("orders.form.unit_price")} {product ? Number(product.price).toLocaleString() : 0} MMK
-                    </span>
-                    <span className="font-semibold text-foreground text-sm">
-                      {t("orders.form.subtotal")} {subtotal.toLocaleString()} MMK
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
 
             {/* Total summary */}
             <div className="pt-3 border-t border-border flex items-center justify-between text-base font-bold text-foreground">
@@ -691,7 +718,7 @@ export function OrderForm({
           <Button
             type="submit"
             variant="premium"
-            disabled={isSubmitting}
+            disabled={isSubmitting || fields.length === 0 || items.some((i) => !i.product_id)}
             className="h-11 w-full text-base font-semibold shadow-soft hover:shadow-lift rounded-xl"
           >
             {isSubmitting ? (

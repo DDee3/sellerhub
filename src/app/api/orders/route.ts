@@ -120,15 +120,17 @@ export async function POST(request: Request) {
 
     const balanceDue = Math.max(0, totalPrice - depositPaid);
 
-    // 6. If order_type === 'stock': verify stock for each item
+    // 6. If order_type === 'stock': verify stock for each item (only for stock and hybrid products)
     if (body.order_type === "stock") {
       for (const item of normalizedItems) {
         const product = productMap.get(item.product_id)!;
-        if (product.stock_qty < item.quantity) {
-          return NextResponse.json(
-            { error: `လက်ကျန် မလုံလောက်ပါ: ${product.name}` },
-            { status: 400 }
-          );
+        if (product.type === "stock" || product.type === "hybrid") {
+          if (product.stock_qty < item.quantity) {
+            return NextResponse.json(
+              { error: `လက်ကျန် မလုံလောက်ပါ: ${product.name}` },
+              { status: 400 }
+            );
+          }
         }
       }
     }
@@ -184,32 +186,34 @@ export async function POST(request: Request) {
       );
     }
 
-    // 9. If order_type === 'stock': decrement stock + log movements
+    // 9. If order_type === 'stock': decrement stock + log movements (only for stock/hybrid products)
     if (body.order_type === "stock") {
       for (const item of normalizedItems) {
         const product = productMap.get(item.product_id)!;
 
-        const { error: stockErr } = await supabase
-          .from("products")
-          .update({ stock_qty: product.stock_qty - item.quantity })
-          .eq("id", item.product_id);
+        if (product.type === "stock" || product.type === "hybrid") {
+          const { error: stockErr } = await supabase
+            .from("products")
+            .update({ stock_qty: product.stock_qty - item.quantity })
+            .eq("id", item.product_id);
 
-        if (stockErr) {
-          console.error("Failed to decrement stock:", stockErr);
-        }
+          if (stockErr) {
+            console.error("Failed to decrement stock:", stockErr);
+          }
 
-        const { error: movementErr } = await supabase
-          .from("stock_movements")
-          .insert({
-            shop_id: shop.id,
-            product_id: item.product_id,
-            change: -item.quantity,
-            reason: "sale",
-            note: `Order ${orderId}`,
-          });
+          const { error: movementErr } = await supabase
+            .from("stock_movements")
+            .insert({
+              shop_id: shop.id,
+              product_id: item.product_id,
+              change: -item.quantity,
+              reason: "sale",
+              note: `Order ${orderId}`,
+            });
 
-        if (movementErr) {
-          console.error("Failed to log stock movement:", movementErr);
+          if (movementErr) {
+            console.error("Failed to log stock movement:", movementErr);
+          }
         }
       }
     }

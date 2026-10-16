@@ -109,7 +109,7 @@ export async function PUT(
     const newIds = Array.from(new Set(normalizedItems.map((i) => i.product_id)));
     const { data: newProducts, error: prodErr } = await supabase
       .from("products")
-      .select("id, name, price, stock_qty")
+      .select("id, name, price, type, stock_qty")
       .in("id", newIds)
       .eq("shop_id", shop.id);
 
@@ -122,16 +122,16 @@ export async function PUT(
 
     // 6. If order_type === 'stock', perform stock adjustments
     if (order.order_type === "stock") {
-      // STEP A: reverse old items
+      // STEP A: reverse old items (only for stock/hybrid products)
       for (const oldItem of oldItems) {
         if (!oldItem.product_id) continue;
         const { data: prod } = await supabase
           .from("products")
-          .select("stock_qty")
+          .select("stock_qty, type")
           .eq("id", oldItem.product_id)
           .single();
 
-        if (prod) {
+        if (prod && (prod.type === "stock" || prod.type === "hybrid")) {
           await supabase
             .from("products")
             .update({ stock_qty: prod.stock_qty + oldItem.quantity })
@@ -147,10 +147,10 @@ export async function PUT(
         }
       }
 
-      // STEP B: verify new stock available after reversal
+      // STEP B: verify new stock available after reversal (only for stock/hybrid products)
       const { data: freshProducts, error: freshErr } = await supabase
         .from("products")
-        .select("id, name, price, stock_qty")
+        .select("id, name, price, type, stock_qty")
         .in("id", newIds)
         .eq("shop_id", shop.id);
 
@@ -165,56 +165,67 @@ export async function PUT(
 
       for (const newItem of normalizedItems) {
         const p = freshProductMap.get(newItem.product_id);
-        if (!p || p.stock_qty < newItem.quantity) {
-          // Rollback STEP A reversal before failing
-          for (const oldItem of oldItems) {
-            if (!oldItem.product_id) continue;
-            const { data: prod } = await supabase
-              .from("products")
-              .select("stock_qty")
-              .eq("id", oldItem.product_id)
-              .single();
-
-            if (prod) {
-              await supabase
-                .from("products")
-                .update({ stock_qty: prod.stock_qty - oldItem.quantity })
-                .eq("id", oldItem.product_id);
-
-              await supabase.from("stock_movements").insert({
-                shop_id: shop.id,
-                product_id: oldItem.product_id,
-                change: -oldItem.quantity,
-                reason: "sale",
-                note: `Order ${id} edit rollback`,
-              });
-            }
-          }
-
+        if (!p) {
           return NextResponse.json(
-            { error: `လက်ကျန် မလုံလောက်ပါ: ${p?.name || "Product"}` },
+            { error: "Product not found" },
             { status: 400 }
           );
         }
+
+        if (p.type === "stock" || p.type === "hybrid") {
+          if (p.stock_qty < newItem.quantity) {
+            // Rollback STEP A reversal before failing
+            for (const oldItem of oldItems) {
+              if (!oldItem.product_id) continue;
+              const { data: prod } = await supabase
+                .from("products")
+                .select("stock_qty, type")
+                .eq("id", oldItem.product_id)
+                .single();
+
+              if (prod && (prod.type === "stock" || prod.type === "hybrid")) {
+                await supabase
+                  .from("products")
+                  .update({ stock_qty: prod.stock_qty - oldItem.quantity })
+                  .eq("id", oldItem.product_id);
+
+                await supabase.from("stock_movements").insert({
+                  shop_id: shop.id,
+                  product_id: oldItem.product_id,
+                  change: -oldItem.quantity,
+                  reason: "sale",
+                  note: `Order ${id} edit rollback`,
+                });
+              }
+            }
+
+            return NextResponse.json(
+              { error: `လက်ကျန် မလုံလောက်ပါ: ${p.name}` },
+              { status: 400 }
+            );
+          }
+        }
       }
 
-      // STEP C: apply new items
+      // STEP C: apply new items (only for stock/hybrid products)
       for (const newItem of normalizedItems) {
         const p = freshProductMap.get(newItem.product_id)!;
-        await supabase
-          .from("products")
-          .update({ stock_qty: p.stock_qty - newItem.quantity })
-          .eq("id", newItem.product_id);
+        if (p.type === "stock" || p.type === "hybrid") {
+          await supabase
+            .from("products")
+            .update({ stock_qty: p.stock_qty - newItem.quantity })
+            .eq("id", newItem.product_id);
 
-        p.stock_qty -= newItem.quantity;
+          p.stock_qty -= newItem.quantity;
 
-        await supabase.from("stock_movements").insert({
-          shop_id: shop.id,
-          product_id: newItem.product_id,
-          change: -newItem.quantity,
-          reason: "sale",
-          note: `Order ${id} edit - apply`,
-        });
+          await supabase.from("stock_movements").insert({
+            shop_id: shop.id,
+            product_id: newItem.product_id,
+            change: -newItem.quantity,
+            reason: "sale",
+            note: `Order ${id} edit - apply`,
+          });
+        }
       }
     }
 

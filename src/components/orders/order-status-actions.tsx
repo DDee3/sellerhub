@@ -84,7 +84,7 @@ export function OrderStatusActions({
 
             const { data: prod, error: prodErr } = await supabase
               .from("products")
-              .select("stock_qty, shop_id")
+              .select("stock_qty, shop_id, type")
               .eq("id", item.product_id)
               .single();
 
@@ -92,7 +92,7 @@ export function OrderStatusActions({
               throw new Error(prodErr.message);
             }
 
-            if (prod) {
+            if (prod && (prod.type === "stock" || prod.type === "hybrid")) {
               const { error: updateErr } = await supabase
                 .from("products")
                 .update({ stock_qty: prod.stock_qty + item.quantity })

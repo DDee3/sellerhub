@@ -1,14 +1,18 @@
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+"use client";
 
-import { createClient } from "@/lib/supabase/server";
+import { use, useEffect, useState } from "react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft, Loader2 } from "lucide-react";
+
+import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import {
   OrderForm,
   type OrderFormProduct,
 } from "@/components/orders/order-form";
+import { useLanguage } from "@/components/providers/language-provider";
 import { cn } from "@/lib/utils";
 
 interface EditOrderPageProps {
@@ -33,36 +37,75 @@ interface RawOrder {
   order_items: RawOrderItem[] | null;
 }
 
-export default async function EditOrderPage({ params }: EditOrderPageProps) {
-  const { id } = await params;
-  const supabase = await createClient();
+export default function EditOrderPage({ params }: EditOrderPageProps) {
+  const { id } = use(params);
+  const { t } = useLanguage();
+  const [order, setOrder] = useState<RawOrder | null>(null);
+  const [products, setProducts] = useState<OrderFormProduct[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  useEffect(() => {
+    let isMounted = true;
+    async function loadData() {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login");
+      if (!user) {
+        window.location.href = "/login";
+        return;
+      }
+
+      const { data: orderData, error: orderErr } = await supabase
+        .from("orders")
+        .select<string, RawOrder>(
+          "id, status, order_type, total_price, deposit_paid, payment_method, note, customers(name), order_items(product_id, quantity, product_name)"
+        )
+        .eq("id", id)
+        .maybeSingle();
+
+      if (orderErr || !orderData) {
+        if (isMounted) notFound();
+        return;
+      }
+
+      const { data: productsData } = await supabase
+        .from("products")
+        .select("id, name, price, type, stock_qty, deposit_percent")
+        .eq("is_active", true)
+        .order("name");
+
+      if (isMounted) {
+        setOrder(orderData);
+        setProducts(
+          (productsData ?? []).map((p) => ({
+            id: p.id,
+            name: p.name,
+            price: Number(p.price),
+            type: p.type as "stock" | "preorder" | "hybrid",
+            stock_qty: Number(p.stock_qty),
+            deposit_percent: Number(p.deposit_percent),
+          }))
+        );
+        setLoading(false);
+      }
+    }
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
-
-  const { data: shop } = await supabase
-    .from("shops")
-    .select("id")
-    .eq("owner_id", user.id)
-    .maybeSingle();
-
-  if (!shop) {
-    notFound();
-  }
-
-  const { data: order } = await supabase
-    .from("orders")
-    .select<string, RawOrder>(
-      "id, status, order_type, total_price, deposit_paid, payment_method, note, customers(name), order_items(product_id, quantity, product_name)"
-    )
-    .eq("id", id)
-    .eq("shop_id", shop.id)
-    .maybeSingle();
 
   if (!order) {
     notFound();
@@ -76,59 +119,43 @@ export default async function EditOrderPage({ params }: EditOrderPageProps) {
             href={`/orders/${id}`}
             className={cn(
               buttonVariants({ variant: "outline", size: "icon" }),
-              "h-10 w-10 border-slate-200 bg-white shadow-xs"
+              "h-10 w-10 rounded-xl border-border bg-card text-foreground hover:bg-muted shadow-soft shrink-0"
             )}
           >
-            <ArrowLeft className="h-5 w-5 text-slate-600" />
-            <span className="sr-only">နောက်သို့</span>
+            <ArrowLeft className="h-5 w-5 text-muted-foreground" />
+            <span className="sr-only">{t("back")}</span>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              အော်ဒါ ပြင်ဆင်
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              {t("orders.form.edit_title")}
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              အော်ဒါ #{order.id.slice(0, 8)}
+            <p className="text-xs text-muted-foreground mt-0.5">
+              #{order.id.slice(0, 8)}
             </p>
           </div>
         </div>
 
-        <Card className="bg-white border-slate-200/80 shadow-xs p-8 text-center space-y-3">
-          <p className="text-base font-semibold text-slate-800">
-            ဤအော်ဒါကို ပြင်၍ မရပါ
-          </p>
-          <p className="text-xs text-muted-foreground">
+        <Card className="bg-card text-card-foreground border-border shadow-soft rounded-2xl p-8 text-center space-y-3">
+          <p className="text-base font-semibold text-foreground">
             {order.status === "delivered"
-              ? "ပို့ဆောင်ပြီးဖြစ်သော အော်ဒါများကို ပြင်ဆင်ခွင့် မရှိပါ။"
-              : "ပယ်ဖျက်ထားသော အော်ဒါများကို ပြင်ဆင်ခွင့် မရှိပါ။"}
+              ? t("orders.status_delivered")
+              : t("orders.status_cancelled")}
           </p>
           <div className="pt-2">
             <Link
               href={`/orders/${id}`}
-              className={buttonVariants({ variant: "outline", size: "sm" })}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "rounded-xl border-border bg-card text-foreground hover:bg-muted"
+              )}
             >
-              အော်ဒါ အသေးစိတ်သို့ ပြန်သွားမည်
+              &larr; {t("orders.detail.title")}
             </Link>
           </div>
         </Card>
       </div>
     );
   }
-
-  const { data: productsData } = await supabase
-    .from("products")
-    .select("id, name, price, type, stock_qty, deposit_percent")
-    .eq("shop_id", shop.id)
-    .eq("is_active", true)
-    .order("name");
-
-  const products: OrderFormProduct[] = (productsData ?? []).map((p) => ({
-    id: p.id,
-    name: p.name,
-    price: Number(p.price),
-    type: p.type as "stock" | "preorder" | "hybrid",
-    stock_qty: p.stock_qty,
-    deposit_percent: p.deposit_percent,
-  }));
 
   const customerName = Array.isArray(order.customers)
     ? order.customers[0]?.name ?? ""
@@ -149,18 +176,18 @@ export default async function EditOrderPage({ params }: EditOrderPageProps) {
           href={`/orders/${id}`}
           className={cn(
             buttonVariants({ variant: "outline", size: "icon" }),
-            "h-10 w-10 border-slate-200 bg-white shadow-xs"
+            "h-10 w-10 rounded-xl border-border bg-card text-foreground hover:bg-muted shadow-soft shrink-0"
           )}
         >
-          <ArrowLeft className="h-5 w-5 text-slate-600" />
-          <span className="sr-only">နောက်သို့</span>
+          <ArrowLeft className="h-5 w-5 text-muted-foreground" />
+          <span className="sr-only">{t("back")}</span>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            အော်ဒါ ပြင်ဆင်
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {t("orders.form.edit_title")}
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            အော်ဒါ #{order.id.slice(0, 8)} ၏ ပစ္စည်းနှင့် ငွေပေးချေမှု အချက်အလက်များ ပြင်ဆင်ပါ
+          <p className="text-xs text-muted-foreground mt-0.5">
+            #{order.id.slice(0, 8)}
           </p>
         </div>
       </div>
@@ -180,4 +207,3 @@ export default async function EditOrderPage({ params }: EditOrderPageProps) {
     </div>
   );
 }
-
