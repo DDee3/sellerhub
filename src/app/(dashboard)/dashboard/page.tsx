@@ -38,6 +38,8 @@ export default async function DashboardPage() {
       getProfitSummary(shop.id),
     ]);
 
+  console.log("[profit] summary:", profitSummary);
+
   return (
     <DashboardView
       shop={shop}

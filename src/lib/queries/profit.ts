@@ -52,6 +52,8 @@ export async function getProfitSummary(shopId: string): Promise<ProfitSummary> {
   };
 
   const thisMonth = await fetchWindow(monthStart);
+  console.log("[profit] thisMonth rows:", thisMonth.length);
+  console.log("[profit] first row:", thisMonth[0]);
   const lastMonth = await fetchWindow(lastMonthStart, monthStart);
 
   const calc = (rows: OrderItemJoinRow[]) => {
