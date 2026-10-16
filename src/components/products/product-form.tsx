@@ -49,6 +49,7 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
       name: "",
       image_url: "",
       price: "" as unknown as number,
+      cost_price: null,
       type: "stock",
       stock_qty: "" as unknown as number,
       low_stock_alert: 3,
@@ -65,6 +66,12 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
   const onSubmit = async (values: ProductFormValues) => {
     try {
       const sanitizedPrice = Number(values.price) || 0;
+      const sanitizedCostPrice =
+        values.cost_price === null ||
+        values.cost_price === undefined ||
+        (values.cost_price as unknown) === ""
+          ? null
+          : Number(values.cost_price);
       const sanitizedStockQty =
         values.type === "preorder" ? 0 : Number(values.stock_qty) || 0;
       const sanitizedLowStock = Number(values.low_stock_alert) || 3;
@@ -79,6 +86,7 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
             name: values.name,
             image_url: values.image_url || null,
             price: sanitizedPrice,
+            cost_price: sanitizedCostPrice,
             type: values.type,
             stock_qty: sanitizedStockQty,
             low_stock_alert: sanitizedLowStock,
@@ -121,6 +129,7 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           name: values.name,
           image_url: values.image_url || null,
           price: sanitizedPrice,
+          cost_price: sanitizedCostPrice,
           type: values.type,
           stock_qty: sanitizedStockQty,
           low_stock_alert: sanitizedLowStock,
@@ -189,35 +198,72 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           )}
         />
 
-        {/* Price */}
-        <FormField
-          control={form.control}
-          name="price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium text-foreground">
-                {t("products.form.price")}
-              </FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  step="any"
-                  min="0"
-                  placeholder={t("products.form.price_placeholder")}
-                  value={field.value === 0 ? "" : (field.value ?? "")}
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value === "" ? "" : Number(e.target.value)
-                    )
-                  }
-                  className="h-11 text-base bg-background text-foreground border-input rounded-xl"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Pricing: Price & Cost Price */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Price */}
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-foreground">
+                  {t("products.form.price")}
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    step="any"
+                    min="0"
+                    placeholder={t("products.form.price_placeholder")}
+                    value={field.value === 0 ? "" : (field.value ?? "")}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === "" ? "" : Number(e.target.value)
+                      )
+                    }
+                    className="h-11 text-base bg-background text-foreground border-input rounded-xl"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Cost Price */}
+          <FormField
+            control={form.control}
+            name="cost_price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-foreground">
+                  {t("products.form.cost_price")}
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    step="any"
+                    min="0"
+                    placeholder={t("products.form.cost_price_placeholder")}
+                    value={
+                      field.value === null || field.value === undefined
+                        ? ""
+                        : field.value
+                    }
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === "" ? null : Number(e.target.value)
+                      )
+                    }
+                    className="h-11 text-base bg-background text-foreground border-input rounded-xl"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {/* Type */}
         <FormField

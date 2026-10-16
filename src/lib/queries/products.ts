@@ -6,6 +6,7 @@ export type Product = {
   name: string;
   image_url: string | null;
   price: number;
+  cost_price: number | null;
   type: "stock" | "preorder" | "hybrid";
   stock_qty: number;
   low_stock_alert: number;
@@ -43,7 +44,7 @@ export async function getProducts(opts: GetProductsOpts): Promise<Product[]> {
   let query = supabase
     .from("products")
     .select(
-      "id, name, image_url, price, type, stock_qty, low_stock_alert, deposit_percent, source, is_active"
+      "id, name, image_url, price, cost_price, type, stock_qty, low_stock_alert, deposit_percent, source, is_active"
     )
     .eq("shop_id", shop.id);
 

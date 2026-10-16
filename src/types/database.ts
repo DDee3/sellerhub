@@ -98,6 +98,7 @@ export interface Database {
           name: string
           image_url: string | null
           price: number
+          cost_price: number | null
           type: ProductType
           stock_qty: number
           low_stock_alert: number
@@ -114,6 +115,7 @@ export interface Database {
           name: string
           image_url?: string | null
           price: number
+          cost_price?: number | null
           type: ProductType
           stock_qty?: number
           low_stock_alert?: number
@@ -130,6 +132,7 @@ export interface Database {
           name?: string
           image_url?: string | null
           price?: number
+          cost_price?: number | null
           type?: ProductType
           stock_qty?: number
           low_stock_alert?: number

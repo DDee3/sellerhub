@@ -25,6 +25,7 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     name: product.name,
     image_url: product.image_url ?? "",
     price: product.price,
+    cost_price: product.cost_price ?? null,
     type: product.type,
     stock_qty: product.stock_qty,
     low_stock_alert: product.low_stock_alert,

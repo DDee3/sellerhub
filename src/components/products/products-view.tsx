@@ -16,6 +16,7 @@ export interface ProductItem {
   id: string;
   name: string;
   price: number;
+  cost_price?: number | null;
   type: ProductType;
   stock_qty: number;
   low_stock_alert: number;

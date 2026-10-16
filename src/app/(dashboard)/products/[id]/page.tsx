@@ -20,6 +20,26 @@ function TypeBadge({ type }: { type: "stock" | "preorder" | "hybrid" }) {
   return <Badge variant="outline">Hybrid (နှစ်မျိုးရော)</Badge>;
 }
 
+function MarginBadge({ price, costPrice }: { price: number; costPrice: number | null }) {
+  if (costPrice == null) return null;
+
+  const margin = price > 0 ? ((price - costPrice) / price) * 100 : 0;
+  const formattedMargin = Number.isInteger(margin) ? margin : margin.toFixed(1);
+
+  let colorClass = "bg-red-600 hover:bg-red-700 text-white";
+  if (margin > 20) {
+    colorClass = "bg-emerald-600 hover:bg-emerald-700 text-white";
+  } else if (margin >= 10) {
+    colorClass = "bg-amber-500 hover:bg-amber-600 text-white";
+  }
+
+  return (
+    <Badge className={cn("text-xs px-2 py-0.5 font-medium border-0 shadow-none", colorClass)}>
+      Margin: {formattedMargin}%
+    </Badge>
+  );
+}
+
 export default async function ProductDetailPage({
   params,
 }: ProductDetailPageProps) {
@@ -79,9 +99,12 @@ export default async function ProductDetailPage({
                 <h2 className="text-xl font-semibold text-slate-900">
                   {product.name}
                 </h2>
-                <p className="text-lg font-bold text-primary mt-1">
-                  {product.price.toLocaleString()} ကျပ်
-                </p>
+                <div className="flex items-center gap-2.5 mt-1 flex-wrap">
+                  <p className="text-lg font-bold text-primary">
+                    {product.price.toLocaleString()} ကျပ်
+                  </p>
+                  <MarginBadge price={product.price} costPrice={product.cost_price} />
+                </div>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <TypeBadge type={product.type} />
@@ -100,6 +123,17 @@ export default async function ProductDetailPage({
 
           {/* Attribute grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            {product.cost_price != null && (
+              <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-100">
+                <span className="text-slate-500 text-xs block mb-1">
+                  အရင်းဈေး
+                </span>
+                <span className="font-semibold text-slate-800">
+                  {product.cost_price.toLocaleString()} ကျပ်
+                </span>
+              </div>
+            )}
+
             <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-100">
               <span className="text-slate-500 text-xs block mb-1">
                 လက်ကျန် အရေအတွက်

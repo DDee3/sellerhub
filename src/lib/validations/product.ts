@@ -7,6 +7,10 @@ export const productSchema = z.object({
     (val) => (val === "" || val === undefined ? undefined : val),
     z.coerce.number().min(0, "ဈေးနှုန်း ထည့်ပါ")
   ),
+  cost_price: z.preprocess(
+    (val) => (val === "" || val === undefined || val === null ? null : val),
+    z.coerce.number().min(0).nullable().optional()
+  ),
   type: z.enum(["stock", "preorder", "hybrid"]),
   stock_qty: z.preprocess(
     (val) => (val === "" || val === undefined ? 0 : val),
