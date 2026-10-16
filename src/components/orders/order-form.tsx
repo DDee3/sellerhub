@@ -85,7 +85,7 @@ export function OrderForm({
       items:
         initialValues?.items && initialValues.items.length > 0
           ? initialValues.items
-          : [{ product_id: products[0]?.id || "", quantity: 1 }],
+          : [{ product_id: "", quantity: 1 }],
     },
   });
 
@@ -438,7 +438,7 @@ export function OrderForm({
               variant="outline"
               size="sm"
               onClick={() =>
-                append({ product_id: products[0]?.id || "", quantity: 1 })
+                append({ product_id: "", quantity: 1 })
               }
               className="gap-1.5 h-9 text-xs font-medium rounded-xl border-border bg-card text-foreground hover:bg-muted shadow-soft"
             >
