@@ -71,6 +71,15 @@ export const dict = {
     "dashboard.alert_threshold": "Alert threshold",
     "dashboard.remaining": "Remaining",
     "dashboard.units": "items",
+    "dashboard.profit_title": "Profit Overview",
+    "dashboard.profit_this_month": "Net Profit This Month",
+    "dashboard.profit_margin": "Margin",
+    "dashboard.revenue": "Revenue",
+    "dashboard.cost": "Cost",
+    "dashboard.vs_last_month": "vs last month",
+    "dashboard.no_profit_data": "No delivered orders with cost data this month yet",
+    "dashboard.profit_hint": "Profit is calculated automatically when orders are delivered and products have cost prices set",
+    "dashboard.daily_profit_trend": "Daily Trend",
 
     // shipment statuses
     "shipment.ordering": "Ordering",
@@ -427,6 +436,15 @@ export const dict = {
     "dashboard.alert_threshold": "သတိပေးသတ်မှတ်ချက်",
     "dashboard.remaining": "လက်ကျန်",
     "dashboard.units": "ခု",
+    "dashboard.profit_title": "အမြတ်ငွေ အနှစ်ချုပ်",
+    "dashboard.profit_this_month": "ယခုလ အသားတင်အမြတ်",
+    "dashboard.profit_margin": "အမြတ်ရာခိုင်နှုန်း",
+    "dashboard.revenue": "ရောင်းရငွေ",
+    "dashboard.cost": "အရင်းစရိတ်",
+    "dashboard.vs_last_month": "ပြီးခဲ့သည့်လထက်",
+    "dashboard.no_profit_data": "ယခုလအတွင်း ကုန်ကျစရိတ်ထည့်သွင်းထားသော အောင်မြင်ပြီး အော်ဒါမရှိသေးပါ",
+    "dashboard.profit_hint": "ကုန်ပစ္စည်းများတွင် အရင်းစရိတ်ထည့်သွင်းပြီး အော်ဒါများ ပို့ဆောင်ပြီးပါက အမြတ်ငွေကို အလိုအလျောက် တွက်ချက်ပေးပါသည်",
+    "dashboard.daily_profit_trend": "နေ့စဉ် အမြတ်ငွေ လမ်းကြောင်း",
 
     // shipment statuses
     "shipment.ordering": "မှာယူဆဲ",

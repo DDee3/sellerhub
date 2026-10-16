@@ -5,6 +5,7 @@ import {
   getUpcomingShipments,
   getLowStockProducts,
 } from "@/lib/queries/dashboard";
+import { getProfitSummary } from "@/lib/queries/profit";
 import { DashboardView } from "@/components/dashboard/dashboard-view";
 
 export default async function DashboardPage() {
@@ -28,12 +29,14 @@ export default async function DashboardPage() {
     redirect("/signup");
   }
 
-  // Fetch all 3 queries in parallel
-  const [stats, upcomingShipments, lowStockProducts] = await Promise.all([
-    getDashboardStats(shop.id),
-    getUpcomingShipments(shop.id, 7),
-    getLowStockProducts(shop.id),
-  ]);
+  // Fetch all queries in parallel
+  const [stats, upcomingShipments, lowStockProducts, profitSummary] =
+    await Promise.all([
+      getDashboardStats(shop.id),
+      getUpcomingShipments(shop.id, 7),
+      getLowStockProducts(shop.id),
+      getProfitSummary(shop.id),
+    ]);
 
   return (
     <DashboardView
@@ -41,6 +44,7 @@ export default async function DashboardPage() {
       stats={stats}
       upcomingShipments={upcomingShipments}
       lowStockProducts={lowStockProducts}
+      profitSummary={profitSummary}
     />
   );
 }

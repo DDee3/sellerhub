@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 
 import type { DashboardStats } from "@/lib/queries/dashboard";
+import type { ProfitSummary } from "@/lib/queries/profit";
+import { ProfitWidget } from "@/components/dashboard/profit-widget";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -41,6 +43,7 @@ interface DashboardViewProps {
   stats: DashboardStats;
   upcomingShipments: UpcomingShipment[];
   lowStockProducts: LowStockProduct[];
+  profitSummary: ProfitSummary;
 }
 
 export function DashboardView({
@@ -48,6 +51,7 @@ export function DashboardView({
   stats,
   upcomingShipments,
   lowStockProducts,
+  profitSummary,
 }: DashboardViewProps) {
   const { t, language } = useLanguage();
 
@@ -181,6 +185,9 @@ export function DashboardView({
           </div>
         </div>
       </div>
+
+      {/* 2.5 Profit Overview Widget */}
+      <ProfitWidget summary={profitSummary} />
 
       {/* 3. Two column grid on lg */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
