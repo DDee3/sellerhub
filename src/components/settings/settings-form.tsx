@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 import { Globe, Palette, Store, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage, type Language } from "@/components/providers/language-provider";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -107,163 +107,176 @@ export function SettingsForm({ initialShop }: SettingsFormProps) {
   };
 
   return (
-    <form onSubmit={handleSave} className="flex flex-col gap-4 max-w-4xl">
-      {/* 1. Language & Region */}
-      <Card>
-        <CardHeader className="p-4 pb-2">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <Globe className="h-4 w-4" />
+    <form onSubmit={handleSave} className="flex flex-col gap-6">
+      <Card className="bg-card text-card-foreground border-border shadow-soft overflow-hidden">
+        {/* Section 1: Language & Region */}
+        <div className="p-5 border-b border-border">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3 flex-1">
+              <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Globe className="h-4 w-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  {t("settings.language_region")}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {t("settings.language_region_desc")}
+                </p>
+              </div>
             </div>
-            <div>
-              <CardTitle className="text-base font-semibold">{t("settings.language_region")}</CardTitle>
-              <CardDescription className="text-xs">{t("settings.language_region_desc")}</CardDescription>
+            {/* Right-aligned control on desktop */}
+            <div className="w-full sm:w-48 shrink-0">
+              {mounted ? (
+                <Select
+                  value={selectedLang}
+                  onValueChange={(val) => {
+                    if (val === "en" || val === "my") {
+                      setSelectedLang(val);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full h-9 rounded-lg bg-background border-input text-sm">
+                    <SelectValue>
+                      {languageLabels[selectedLang] || selectedLang}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="my">မြန်မာ</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="h-9 rounded-lg bg-muted/60 animate-pulse" />
+              )}
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="p-4 pt-1">
-          <div className="space-y-1.5 max-w-md">
-            <Label htmlFor="language-select" className="text-xs font-medium">{t("settings.language")}</Label>
-            {mounted ? (
-              <Select
-                value={selectedLang}
-                onValueChange={(val) => {
-                  if (val === "en" || val === "my") {
-                    setSelectedLang(val);
-                  }
-                }}
-              >
-                <SelectTrigger id="language-select" className="w-full h-10 rounded-xl">
-                  <SelectValue placeholder="Select language">
-                    {languageLabels[selectedLang] || selectedLang}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="my">မြန်မာ</SelectItem>
-                </SelectContent>
-              </Select>
-            ) : (
-              <div className="h-10 w-full rounded-xl bg-muted/60 animate-pulse" />
-            )}
-          </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* 2. Appearance */}
-      <Card>
-        <CardHeader className="p-4 pb-2">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-              <Palette className="h-4 w-4" />
+        {/* Section 2: Appearance */}
+        <div className="p-5 border-b border-border">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3 flex-1">
+              <div className="h-9 w-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                <Palette className="h-4 w-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  {t("settings.appearance")}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {t("settings.appearance_desc")}
+                </p>
+              </div>
             </div>
-            <div>
-              <CardTitle className="text-base font-semibold">{t("settings.appearance")}</CardTitle>
-              <CardDescription className="text-xs">{t("settings.appearance_desc")}</CardDescription>
+            {/* Right-aligned control on desktop */}
+            <div className="w-full sm:w-48 shrink-0">
+              {mounted ? (
+                <Select
+                  value={selectedTheme}
+                  onValueChange={(val) => {
+                    if (val) setSelectedTheme(val);
+                  }}
+                >
+                  <SelectTrigger className="w-full h-9 rounded-lg bg-background border-input text-sm">
+                    <SelectValue>
+                      {themeLabels[selectedTheme] || selectedTheme}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="light">Light</SelectItem>
+                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="h-9 rounded-lg bg-muted/60 animate-pulse" />
+              )}
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="p-4 pt-1">
-          <div className="space-y-1.5 max-w-md">
-            <Label htmlFor="theme-select" className="text-xs font-medium">{t("settings.theme")}</Label>
-            {mounted ? (
-              <Select
-                value={selectedTheme}
-                onValueChange={(val) => {
-                  if (val) setSelectedTheme(val);
-                }}
-              >
-                <SelectTrigger id="theme-select" className="w-full h-10 rounded-xl">
-                  <SelectValue placeholder="Select theme">
-                    {themeLabels[selectedTheme] || selectedTheme}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  <SelectItem value="light">Light</SelectItem>
-                  <SelectItem value="dark">Dark</SelectItem>
-                  <SelectItem value="system">System</SelectItem>
-                </SelectContent>
-              </Select>
-            ) : (
-              <div className="h-10 w-full rounded-xl bg-muted/60 animate-pulse" />
-            )}
-          </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* 3. Shop Profile */}
-      <Card>
-        <CardHeader className="p-4 pb-2">
-          <div className="flex items-center gap-3">
+        {/* Section 3: Shop Profile */}
+        <div className="p-5">
+          <div className="flex items-start gap-3 mb-4">
             <div className="h-9 w-9 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
               <Store className="h-4 w-4" />
             </div>
             <div>
-              <CardTitle className="text-base font-semibold">{t("settings.shop_profile")}</CardTitle>
-              <CardDescription className="text-xs">{t("settings.shop_profile_desc")}</CardDescription>
+              <h3 className="text-sm font-semibold text-foreground">
+                {t("settings.shop_profile")}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {t("settings.shop_profile_desc")}
+              </p>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="p-4 pt-1 space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2">
+
+          <div className="grid gap-4 sm:grid-cols-2 pt-1">
             <div className="space-y-1.5">
-              <Label htmlFor="shop-name" className="text-xs font-medium">{t("settings.shop_name")}</Label>
+              <Label htmlFor="shop-name" className="text-xs font-medium text-foreground">
+                {t("settings.shop_name")}
+              </Label>
               <Input
                 id="shop-name"
                 value={shopName}
                 onChange={(e) => setShopName(e.target.value)}
                 placeholder={t("settings.shop_name_placeholder")}
                 required
-                className="h-10 rounded-xl"
+                className="h-9 rounded-lg bg-background text-foreground border-input text-sm"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="shop-phone" className="text-xs font-medium">{t("settings.phone")}</Label>
+              <Label htmlFor="shop-phone" className="text-xs font-medium text-foreground">
+                {t("settings.phone")}
+              </Label>
               <Input
                 id="shop-phone"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder={t("settings.phone_placeholder")}
-                className="h-10 rounded-xl"
+                className="h-9 rounded-lg bg-background text-foreground border-input text-sm"
               />
             </div>
-          </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="shop-fb" className="text-xs font-medium">{t("settings.facebook_url")}</Label>
+              <Label htmlFor="shop-fb" className="text-xs font-medium text-foreground">
+                {t("settings.facebook_url")}
+              </Label>
               <Input
                 id="shop-fb"
                 value={facebookUrl}
                 onChange={(e) => setFacebookUrl(e.target.value)}
                 placeholder={t("settings.facebook_placeholder")}
-                className="h-10 rounded-xl"
+                className="h-9 rounded-lg bg-background text-foreground border-input text-sm"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="shop-tg" className="text-xs font-medium">{t("settings.telegram_username")}</Label>
+              <Label htmlFor="shop-tg" className="text-xs font-medium text-foreground">
+                {t("settings.telegram_username")}
+              </Label>
               <Input
                 id="shop-tg"
                 value={telegramUsername}
                 onChange={(e) => setTelegramUsername(e.target.value)}
                 placeholder={t("settings.telegram_placeholder")}
-                className="h-10 rounded-xl"
+                className="h-9 rounded-lg bg-background text-foreground border-input text-sm"
               />
             </div>
           </div>
-        </CardContent>
+        </div>
       </Card>
 
       {/* Save Button */}
-      <div className="flex items-center justify-end mt-6">
+      <div className="flex items-center justify-end">
         <Button
           type="submit"
           variant="premium"
-          size="lg"
+          size="default"
           disabled={isPending}
-          className="min-w-36 gap-2 shadow-soft hover:shadow-lift font-semibold"
+          className="min-w-32 gap-2 shadow-soft hover:shadow-lift font-semibold"
         >
           {isPending ? (
             <>
@@ -281,4 +294,3 @@ export function SettingsForm({ initialShop }: SettingsFormProps) {
     </form>
   );
 }
-
