@@ -219,7 +219,7 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-foreground">
-                {t("shipments.form.arrive_date_hint")}
+                {t("shipments.form.arrive_date")}
               </FormLabel>
               <FormControl>
                 <Input
@@ -327,7 +327,11 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
           className="w-full h-12 text-base font-semibold shadow-soft"
         >
           {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-          {isSubmitting ? t("shipments.form.saving") : t("shipments.form.submit")}
+          {isSubmitting
+            ? t("shipments.form.saving")
+            : shipmentId
+            ? t("shipments.form.submit_edit")
+            : t("shipments.form.submit")}
         </Button>
       </form>
     </Form>
