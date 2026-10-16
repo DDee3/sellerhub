@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLanguage } from "@/components/providers/language-provider";
 
 interface ProductFormProps {
   initialValues?: ProductFormValues;
@@ -40,6 +41,7 @@ interface ProductFormProps {
 export function ProductForm({ initialValues, productId }: ProductFormProps) {
   const router = useRouter();
   const supabase = createClient();
+  const { t } = useLanguage();
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema) as unknown as Resolver<ProductFormValues>,
@@ -99,7 +101,7 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
         } = await supabase.auth.getUser();
 
         if (authError || !user) {
-          toast.error("အကောင့်ဝင်ရန် လိုအပ်ပါသည်");
+          toast.error(t("products.form.error_auth"));
           return;
         }
 
@@ -110,7 +112,7 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           .single();
 
         if (shopError || !shop) {
-          toast.error("ဆိုင်အချက်အလက် ရှာမတွေ့ပါ");
+          toast.error(t("products.form.error_shop"));
           return;
         }
 
@@ -134,11 +136,11 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
         }
       }
 
-      toast.success("သိမ်းဆည်းပြီးပါပြီ");
+      toast.success(t("products.form.success"));
       router.push("/products");
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်");
+      toast.error(err instanceof Error ? err.message : t("error"));
     }
   };
 
@@ -151,14 +153,14 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                ပစ္စည်းနာမည် *
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("products.form.name")}
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  placeholder="ပစ္စည်းနာမည် ရိုက်ထည့်ပါ"
-                  className="h-12 text-base bg-white border-slate-200"
+                  placeholder={t("products.form.name_placeholder")}
+                  className="h-11 text-base bg-background text-foreground border-input rounded-xl"
                 />
               </FormControl>
               <FormMessage />
@@ -172,14 +174,14 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           name="image_url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                ပုံ URL
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("products.form.image_url")}
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  placeholder="https://example.com/image.jpg"
-                  className="h-12 text-base bg-white border-slate-200"
+                  placeholder={t("products.form.image_placeholder")}
+                  className="h-11 text-base bg-background text-foreground border-input rounded-xl"
                 />
               </FormControl>
               <FormMessage />
@@ -193,8 +195,8 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           name="price"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                ဈေးနှုန်း (ကျပ်) *
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("products.form.price")}
               </FormLabel>
               <FormControl>
                 <Input
@@ -202,14 +204,14 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
                   inputMode="numeric"
                   step="any"
                   min="0"
-                  placeholder="0"
+                  placeholder={t("products.form.price_placeholder")}
                   value={field.value === 0 ? "" : (field.value ?? "")}
                   onChange={(e) =>
                     field.onChange(
                       e.target.value === "" ? "" : Number(e.target.value)
                     )
                   }
-                  className="h-12 text-base bg-white border-slate-200"
+                  className="h-11 text-base bg-background text-foreground border-input rounded-xl"
                 />
               </FormControl>
               <FormMessage />
@@ -223,8 +225,8 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                အမျိုးအစား *
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("products.form.type")}
               </FormLabel>
               <FormControl>
                 <Select
@@ -233,13 +235,13 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
                     if (value) field.onChange(value);
                   }}
                 >
-                  <SelectTrigger className="h-12 w-full bg-white border-slate-200 text-base">
-                    <SelectValue placeholder="အမျိုးအစား ရွေးပါ" />
+                  <SelectTrigger className="h-11 w-full bg-background text-foreground border-input text-base rounded-xl">
+                    <SelectValue placeholder={t("products.form.type_placeholder")} />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="stock">လက်ကျန် (Stock)</SelectItem>
-                    <SelectItem value="preorder">ကြိုမှာ (Pre-order)</SelectItem>
-                    <SelectItem value="hybrid">နှစ်မျိုးရော (Hybrid)</SelectItem>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="stock">{t("products.form.type_stock")}</SelectItem>
+                    <SelectItem value="preorder">{t("products.form.type_preorder")}</SelectItem>
+                    <SelectItem value="hybrid">{t("products.form.type_hybrid")}</SelectItem>
                   </SelectContent>
                 </Select>
               </FormControl>
@@ -255,8 +257,8 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
             name="stock_qty"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-slate-700">
-                  လက်ကျန်အရေအတွက်
+                <FormLabel className="text-sm font-medium text-foreground">
+                  {t("products.form.stock_qty")}
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -271,7 +273,7 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
                         e.target.value === "" ? "" : Number(e.target.value)
                       )
                     }
-                    className="h-12 text-base bg-white border-slate-200"
+                    className="h-11 text-base bg-background text-foreground border-input rounded-xl"
                   />
                 </FormControl>
                 <FormMessage />
@@ -286,8 +288,8 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           name="low_stock_alert"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                လက်ကျန်သတိပေးချက်
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("products.form.low_stock_alert")}
               </FormLabel>
               <FormControl>
                 <Input
@@ -302,7 +304,7 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
                       e.target.value === "" ? "" : Number(e.target.value)
                     )
                   }
-                  className="h-12 text-base bg-white border-slate-200"
+                  className="h-11 text-base bg-background text-foreground border-input rounded-xl"
                 />
               </FormControl>
               <FormMessage />
@@ -317,8 +319,8 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
             name="deposit_percent"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-slate-700">
-                  စရံ %
+                <FormLabel className="text-sm font-medium text-foreground">
+                  {t("products.form.deposit_percent")}
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -334,7 +336,7 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
                         e.target.value === "" ? "" : Number(e.target.value)
                       )
                     }
-                    className="h-12 text-base bg-white border-slate-200"
+                    className="h-11 text-base bg-background text-foreground border-input rounded-xl"
                   />
                 </FormControl>
                 <FormMessage />
@@ -349,14 +351,14 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           name="source"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                အရင်းအမြစ်
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("products.form.source")}
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  placeholder="ဥပမာ - BKK, China, Local"
-                  className="h-12 text-base bg-white border-slate-200"
+                  placeholder={t("products.form.source_placeholder")}
+                  className="h-11 text-base bg-background text-foreground border-input rounded-xl"
                 />
               </FormControl>
               <FormMessage />
@@ -370,15 +372,15 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                အသေးစိတ် ဖော်ပြချက်
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("products.form.description")}
               </FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
-                  placeholder="ပစ္စည်း အကြောင်း အသေးစိတ် ရေးရန်"
+                  placeholder={t("products.form.description_placeholder")}
                   rows={3}
-                  className="text-base bg-white border-slate-200"
+                  className="text-base bg-background text-foreground border-input rounded-xl"
                 />
               </FormControl>
               <FormMessage />
@@ -391,22 +393,22 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
           control={form.control}
           name="is_active"
           render={({ field }) => (
-            <FormItem className="flex items-center justify-between rounded-lg border border-slate-200 p-4 bg-white">
+            <FormItem className="flex items-center justify-between rounded-2xl border border-border p-4 bg-card text-card-foreground">
               <div className="space-y-0.5">
-                <FormLabel className="text-sm font-medium text-slate-900">
-                  အသက်ဝင်သည်
+                <FormLabel className="text-sm font-medium text-foreground">
+                  {t("products.form.is_active")}
                 </FormLabel>
-                <p className="text-xs text-slate-500">
-                  ပိတ်ထားပါက ပစ္စည်းစာရင်းတွင် မပြသတော့ပါ
+                <p className="text-xs text-muted-foreground">
+                  {t("products.form.is_active_desc")}
                 </p>
               </div>
               <FormControl>
                 <Switch.Root
                   checked={field.value}
                   onCheckedChange={field.onChange}
-                  className="group relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 data-[checked]:bg-primary bg-slate-200"
+                  className="group relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 data-[checked]:bg-primary bg-muted"
                 >
-                  <Switch.Thumb className="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out data-[checked]:translate-x-5 translate-x-0" />
+                  <Switch.Thumb className="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white dark:bg-card-foreground shadow-lg ring-0 transition duration-200 ease-in-out data-[checked]:translate-x-5 translate-x-0" />
                 </Switch.Root>
               </FormControl>
             </FormItem>
@@ -416,18 +418,21 @@ export function ProductForm({ initialValues, productId }: ProductFormProps) {
         {/* Submit Button */}
         <Button
           type="submit"
+          variant="premium"
           disabled={isSubmitting}
-          className="h-12 w-full text-base font-semibold shadow-xs"
+          className="h-11 w-full text-base font-semibold shadow-soft hover:shadow-lift rounded-xl"
         >
           {isSubmitting ? (
             <Loader2 className="h-5 w-5 animate-spin" />
           ) : productId ? (
-            "ပြင်ဆင်ချက် သိမ်းမည်"
+            t("products.form.submit_edit")
           ) : (
-            "ပစ္စည်း အသစ်ထည့်မည်"
+            t("products.form.submit_create")
           )}
         </Button>
       </form>
     </Form>
   );
 }
+
+export default ProductForm;

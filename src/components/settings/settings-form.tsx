@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { Globe, Palette, Store, Sparkles, Check, Loader2 } from "lucide-react";
+import { Globe, Palette, Store, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage, type Language } from "@/components/providers/language-provider";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -31,6 +31,17 @@ interface SettingsFormProps {
   initialShop: ShopData;
 }
 
+const languageLabels: Record<string, string> = {
+  en: "English",
+  my: "မြန်မာ",
+};
+
+const themeLabels: Record<string, string> = {
+  light: "Light",
+  dark: "Dark",
+  system: "System",
+};
+
 export function SettingsForm({ initialShop }: SettingsFormProps) {
   const router = useRouter();
   const { language, setLanguage, t, mounted } = useLanguage();
@@ -45,6 +56,17 @@ export function SettingsForm({ initialShop }: SettingsFormProps) {
     initialShop.telegram_username || ""
   );
 
+  // Sync dropdown values if language or theme change externally
+  useEffect(() => {
+    setSelectedLang(language);
+  }, [language]);
+
+  useEffect(() => {
+    if (theme) {
+      setSelectedTheme(theme);
+    }
+  }, [theme]);
+
   const [isPending, startTransition] = useTransition();
 
   const handleSave = async (e: React.FormEvent) => {
@@ -52,15 +74,11 @@ export function SettingsForm({ initialShop }: SettingsFormProps) {
 
     startTransition(async () => {
       try {
-        // 1. Update language state & localStorage
-        if (selectedLang !== language) {
-          setLanguage(selectedLang);
-        }
+        // 1. Update language state & localStorage immediately
+        setLanguage(selectedLang);
 
-        // 2. Update theme
-        if (selectedTheme !== theme) {
-          setTheme(selectedTheme);
-        }
+        // 2. Update theme immediately
+        setTheme(selectedTheme);
 
         // 3. Update shop profile in Supabase
         const supabase = createClient();
@@ -89,23 +107,23 @@ export function SettingsForm({ initialShop }: SettingsFormProps) {
   };
 
   return (
-    <form onSubmit={handleSave} className="space-y-6 max-w-4xl">
+    <form onSubmit={handleSave} className="flex flex-col gap-4 max-w-4xl">
       {/* 1. Language & Region */}
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 pb-2">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <Globe className="h-5 w-5" />
+            <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Globe className="h-4 w-4" />
             </div>
             <div>
-              <CardTitle>{t("settings.language_region")}</CardTitle>
-              <CardDescription>{t("settings.language_region_desc")}</CardDescription>
+              <CardTitle className="text-base font-semibold">{t("settings.language_region")}</CardTitle>
+              <CardDescription className="text-xs">{t("settings.language_region_desc")}</CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-2">
-          <div className="space-y-2 max-w-md">
-            <Label htmlFor="language-select">{t("settings.language")}</Label>
+        <CardContent className="p-4 pt-1">
+          <div className="space-y-1.5 max-w-md">
+            <Label htmlFor="language-select" className="text-xs font-medium">{t("settings.language")}</Label>
             {mounted ? (
               <Select
                 value={selectedLang}
@@ -116,21 +134,13 @@ export function SettingsForm({ initialShop }: SettingsFormProps) {
                 }}
               >
                 <SelectTrigger id="language-select" className="w-full h-10 rounded-xl">
-                  <SelectValue placeholder="Select language" />
+                  <SelectValue placeholder="Select language">
+                    {languageLabels[selectedLang] || selectedLang}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
-                  <SelectItem value="my">
-                    <span className="flex items-center gap-2">
-                      <span className="text-base leading-none">🇲🇲</span>
-                      <span className="font-medium">မြန်မာ (Myanmar)</span>
-                    </span>
-                  </SelectItem>
-                  <SelectItem value="en">
-                    <span className="flex items-center gap-2">
-                      <span className="text-base leading-none">🇬🇧</span>
-                      <span className="font-medium">English</span>
-                    </span>
-                  </SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="my">မြန်မာ</SelectItem>
                 </SelectContent>
               </Select>
             ) : (
@@ -142,20 +152,20 @@ export function SettingsForm({ initialShop }: SettingsFormProps) {
 
       {/* 2. Appearance */}
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 pb-2">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-              <Palette className="h-5 w-5" />
+            <div className="h-9 w-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+              <Palette className="h-4 w-4" />
             </div>
             <div>
-              <CardTitle>{t("settings.appearance")}</CardTitle>
-              <CardDescription>{t("settings.appearance_desc")}</CardDescription>
+              <CardTitle className="text-base font-semibold">{t("settings.appearance")}</CardTitle>
+              <CardDescription className="text-xs">{t("settings.appearance_desc")}</CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-2">
-          <div className="space-y-2 max-w-md">
-            <Label htmlFor="theme-select">{t("settings.theme")}</Label>
+        <CardContent className="p-4 pt-1">
+          <div className="space-y-1.5 max-w-md">
+            <Label htmlFor="theme-select" className="text-xs font-medium">{t("settings.theme")}</Label>
             {mounted ? (
               <Select
                 value={selectedTheme}
@@ -164,27 +174,14 @@ export function SettingsForm({ initialShop }: SettingsFormProps) {
                 }}
               >
                 <SelectTrigger id="theme-select" className="w-full h-10 rounded-xl">
-                  <SelectValue placeholder="Select theme" />
+                  <SelectValue placeholder="Select theme">
+                    {themeLabels[selectedTheme] || selectedTheme}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
-                  <SelectItem value="light">
-                    <span className="flex items-center gap-2">
-                      <span>☀️</span>
-                      <span>{t("settings.theme_light")}</span>
-                    </span>
-                  </SelectItem>
-                  <SelectItem value="dark">
-                    <span className="flex items-center gap-2">
-                      <span>🌙</span>
-                      <span>{t("settings.theme_dark")}</span>
-                    </span>
-                  </SelectItem>
-                  <SelectItem value="system">
-                    <span className="flex items-center gap-2">
-                      <span>💻</span>
-                      <span>{t("settings.theme_system")}</span>
-                    </span>
-                  </SelectItem>
+                  <SelectItem value="light">Light</SelectItem>
+                  <SelectItem value="dark">Dark</SelectItem>
+                  <SelectItem value="system">System</SelectItem>
                 </SelectContent>
               </Select>
             ) : (
@@ -196,21 +193,21 @@ export function SettingsForm({ initialShop }: SettingsFormProps) {
 
       {/* 3. Shop Profile */}
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 pb-2">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
-              <Store className="h-5 w-5" />
+            <div className="h-9 w-9 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
+              <Store className="h-4 w-4" />
             </div>
             <div>
-              <CardTitle>{t("settings.shop_profile")}</CardTitle>
-              <CardDescription>{t("settings.shop_profile_desc")}</CardDescription>
+              <CardTitle className="text-base font-semibold">{t("settings.shop_profile")}</CardTitle>
+              <CardDescription className="text-xs">{t("settings.shop_profile_desc")}</CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-2 space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="shop-name">{t("settings.shop_name")}</Label>
+        <CardContent className="p-4 pt-1 space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="shop-name" className="text-xs font-medium">{t("settings.shop_name")}</Label>
               <Input
                 id="shop-name"
                 value={shopName}
@@ -221,8 +218,8 @@ export function SettingsForm({ initialShop }: SettingsFormProps) {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="shop-phone">{t("settings.phone")}</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="shop-phone" className="text-xs font-medium">{t("settings.phone")}</Label>
               <Input
                 id="shop-phone"
                 value={phone}
@@ -233,9 +230,9 @@ export function SettingsForm({ initialShop }: SettingsFormProps) {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="shop-fb">{t("settings.facebook_url")}</Label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="shop-fb" className="text-xs font-medium">{t("settings.facebook_url")}</Label>
               <Input
                 id="shop-fb"
                 value={facebookUrl}
@@ -245,8 +242,8 @@ export function SettingsForm({ initialShop }: SettingsFormProps) {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="shop-tg">{t("settings.telegram_username")}</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="shop-tg" className="text-xs font-medium">{t("settings.telegram_username")}</Label>
               <Input
                 id="shop-tg"
                 value={telegramUsername}
@@ -260,7 +257,7 @@ export function SettingsForm({ initialShop }: SettingsFormProps) {
       </Card>
 
       {/* Save Button */}
-      <div className="flex items-center justify-end pt-2">
+      <div className="flex items-center justify-end mt-6">
         <Button
           type="submit"
           variant="premium"

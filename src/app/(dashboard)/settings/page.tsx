@@ -33,7 +33,7 @@ export default async function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 pb-12">
       <SettingsHeader />
       <SettingsForm initialShop={initialShop} />
     </div>

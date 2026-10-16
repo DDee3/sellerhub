@@ -27,6 +27,7 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useLanguage } from "@/components/providers/language-provider";
 import { cn } from "@/lib/utils";
 
 export interface OrderFormProduct {
@@ -67,6 +68,7 @@ export function OrderForm({
   initialValues,
 }: OrderFormProps) {
   const router = useRouter();
+  const { t } = useLanguage();
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderSchema) as unknown as Resolver<OrderFormValues>,
@@ -134,12 +136,12 @@ export function OrderForm({
 
         if (!res.ok) {
           toast.error(
-            data.error || "အော်ဒါ ပြင်ဆင်ရာတွင် အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်"
+            data.error || t("error")
           );
           return;
         }
 
-        toast.success("အော်ဒါ ပြင်ဆင်ပြီးပါပြီ");
+        toast.success(t("orders.form.success"));
         router.push(`/orders/${orderId}`);
         router.refresh();
       } else {
@@ -159,18 +161,18 @@ export function OrderForm({
 
         if (!res.ok) {
           toast.error(
-            data.error || "အော်ဒါ ဖန်တီးရာတွင် အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်"
+            data.error || t("error")
           );
           return;
         }
 
-        toast.success("အော်ဒါ ဖန်တီးပြီးပါပြီ");
+        toast.success(t("orders.form.success"));
         router.push(`/orders/${data.id}`);
         router.refresh();
       }
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "ကွန်ရက် အမှား ဖြစ်ပေါ်ခဲ့သည်"
+        err instanceof Error ? err.message : t("error")
       );
     }
   };
@@ -180,164 +182,142 @@ export function OrderForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Section A: Customer */}
         {orderId ? (
-          <Card className="bg-white border-slate-200/80 shadow-xs">
-            <CardHeader className="border-b border-slate-100 pb-3">
-              <CardTitle className="text-base font-semibold text-slate-900">
-                ၁။ ဖောက်သည်
+          <Card className="bg-card text-card-foreground border-border shadow-soft rounded-2xl">
+            <CardHeader className="border-b border-border/60 pb-3">
+              <CardTitle className="text-base font-semibold text-foreground">
+                1. {t("orders.form.customer")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200/60 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-muted/40 border border-border flex items-center justify-between">
                 <div>
                   <span className="text-xs text-muted-foreground block">
-                    ဖောက်သည်
+                    {t("orders.form.customer")}
                   </span>
-                  <span className="text-base font-medium text-slate-900 mt-0.5 block">
+                  <span className="text-base font-medium text-foreground mt-0.5 block">
                     {initialValues?.customer_name || "—"}
                   </span>
                 </div>
-                <span className="text-xs text-slate-500 bg-white px-2.5 py-1 rounded-md border border-slate-200 font-medium">
-                  ပြင်ဆင်၍ မရပါ
+                <span className="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-md border border-border font-medium">
+                  {t("orders.form.locked_customer")}
                 </span>
               </div>
             </CardContent>
           </Card>
         ) : (
-          <Card className="bg-white border-slate-200/80 shadow-xs">
-          <CardHeader className="border-b border-slate-100 pb-3">
-            <CardTitle className="text-base font-semibold text-slate-900">
-              ၁။ ဖောက်သည်
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4 space-y-4">
-            <FormField
-              control={form.control}
-              name="customer_mode"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormControl>
-                    <RadioGroup
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      className="grid grid-cols-2 gap-3"
-                    >
-                      <label
-                        htmlFor="mode-existing"
-                        className={cn(
-                          "flex items-center gap-2.5 rounded-lg border p-3.5 cursor-pointer text-sm font-medium transition-colors",
-                          field.value === "existing"
-                            ? "border-primary bg-primary/5 text-primary"
-                            : "border-slate-200 bg-white text-slate-700"
-                        )}
-                      >
-                        <RadioGroupItem value="existing" id="mode-existing" />
-                        <span>ရှိပြီးသား ဖောက်သည်</span>
-                      </label>
-                      <label
-                        htmlFor="mode-new"
-                        className={cn(
-                          "flex items-center gap-2.5 rounded-lg border p-3.5 cursor-pointer text-sm font-medium transition-colors",
-                          field.value === "new"
-                            ? "border-primary bg-primary/5 text-primary"
-                            : "border-slate-200 bg-white text-slate-700"
-                        )}
-                      >
-                        <RadioGroupItem value="new" id="mode-new" />
-                        <span>ဖောက်သည် အသစ်</span>
-                      </label>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {watchedCustomerMode === "existing" ? (
+          <Card className="bg-card text-card-foreground border-border shadow-soft rounded-2xl">
+            <CardHeader className="border-b border-border/60 pb-3">
+              <CardTitle className="text-base font-semibold text-foreground">
+                1. {t("orders.form.customer")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-4">
               <FormField
                 control={form.control}
-                name="customer_id"
+                name="customer_mode"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-slate-700">
-                      ဖောက်သည် ရွေးချယ်ပါ *
-                    </FormLabel>
+                  <FormItem className="space-y-2">
                     <FormControl>
-                      <Select
+                      <RadioGroup
                         value={field.value}
-                        onValueChange={(val: string | null) => {
-                          if (val) field.onChange(val);
-                        }}
+                        onValueChange={field.onChange}
+                        className="grid grid-cols-2 gap-3"
                       >
-                        <SelectTrigger className="h-12 w-full bg-white border-slate-200 text-base">
-                          <span className="truncate">
-                            {field.value
-                              ? (() => {
-                                  const c = customers.find(
-                                    (cust) => cust.id === field.value
-                                  );
-                                  return c
-                                    ? `${c.name}${c.phone ? ` — ${c.phone}` : ""}`
-                                    : "ဖောက်သည် ရွေးချယ်ပါ";
-                                })()
-                              : "ဖောက်သည် ရွေးချယ်ပါ"}
-                          </span>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {customers.length === 0 ? (
-                            <SelectItem value="none" disabled>
-                              ဖောက်သည် မရှိသေးပါ (ဖောက်သည် အသစ် ရွေးပါ)
-                            </SelectItem>
-                          ) : (
-                            customers.map((c) => (
-                              <SelectItem key={c.id} value={c.id}>
-                                {c.name} {c.phone ? `— ${c.phone}` : ""}
-                              </SelectItem>
-                            ))
+                        <label
+                          htmlFor="mode-existing"
+                          className={cn(
+                            "flex items-center gap-2.5 rounded-xl border p-3.5 cursor-pointer text-sm font-medium transition-colors",
+                            field.value === "existing"
+                              ? "border-primary bg-primary/10 text-primary font-semibold"
+                              : "border-border bg-card text-foreground hover:bg-muted"
                           )}
-                        </SelectContent>
-                      </Select>
+                        >
+                          <RadioGroupItem value="existing" id="mode-existing" />
+                          <span>{t("orders.form.customer_existing")}</span>
+                        </label>
+                        <label
+                          htmlFor="mode-new"
+                          className={cn(
+                            "flex items-center gap-2.5 rounded-xl border p-3.5 cursor-pointer text-sm font-medium transition-colors",
+                            field.value === "new"
+                              ? "border-primary bg-primary/10 text-primary font-semibold"
+                              : "border-border bg-card text-foreground hover:bg-muted"
+                          )}
+                        >
+                          <RadioGroupItem value="new" id="mode-new" />
+                          <span>{t("orders.form.customer_new")}</span>
+                        </label>
+                      </RadioGroup>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            ) : (
-              <div className="space-y-3 pt-1">
+
+              {watchedCustomerMode === "existing" ? (
                 <FormField
                   control={form.control}
-                  name="new_customer_name"
+                  name="customer_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-slate-700">
-                        ဖောက်သည် အမည် *
+                      <FormLabel className="text-sm font-medium text-foreground">
+                        {t("orders.form.select_customer")}
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="အမည် ရိုက်ထည့်ပါ"
-                          className="h-12 text-base bg-white border-slate-200"
-                        />
+                        <Select
+                          value={field.value}
+                          onValueChange={(val: string | null) => {
+                            if (val) field.onChange(val);
+                          }}
+                        >
+                          <SelectTrigger className="h-11 w-full bg-background text-foreground border-input text-base rounded-xl">
+                            <span className="truncate">
+                              {field.value
+                                ? (() => {
+                                    const c = customers.find(
+                                      (cust) => cust.id === field.value
+                                    );
+                                    return c
+                                      ? `${c.name}${c.phone ? ` — ${c.phone}` : ""}`
+                                      : t("orders.form.select_customer");
+                                  })()
+                                : t("orders.form.select_customer")}
+                            </span>
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl">
+                            {customers.length === 0 ? (
+                              <SelectItem value="none" disabled>
+                                {t("orders.form.no_customers")}
+                              </SelectItem>
+                            ) : (
+                              customers.map((c) => (
+                                <SelectItem key={c.id} value={c.id}>
+                                  {c.name} {c.phone ? `— ${c.phone}` : ""}
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              ) : (
+                <div className="space-y-3 pt-1">
                   <FormField
                     control={form.control}
-                    name="new_customer_phone"
+                    name="new_customer_name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-slate-700">
-                          ဖုန်းနံပါတ် *
+                        <FormLabel className="text-sm font-medium text-foreground">
+                          {t("orders.form.customer_name")}
                         </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
-                            type="tel"
-                            placeholder="09..."
-                            className="h-12 text-base bg-white border-slate-200"
+                            placeholder={t("orders.form.customer_name_placeholder")}
+                            className="h-11 text-base bg-background text-foreground border-input rounded-xl"
                           />
                         </FormControl>
                         <FormMessage />
@@ -345,38 +325,60 @@ export function OrderForm({
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="new_customer_facebook"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium text-slate-700">
-                          Facebook အကောင့် (ရှိလျှင်)
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="အကောင့်အမည် သို့မဟုတ် Link"
-                            className="h-12 text-base bg-white border-slate-200"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name="new_customer_phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-foreground">
+                            {t("orders.form.phone")}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="tel"
+                              placeholder={t("orders.form.phone_placeholder")}
+                              className="h-11 text-base bg-background text-foreground border-input rounded-xl"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="new_customer_facebook"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-foreground">
+                            {t("orders.form.facebook")}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder={t("orders.form.facebook_placeholder")}
+                              className="h-11 text-base bg-background text-foreground border-input rounded-xl"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {/* Section B: Order Type */}
         {!orderId && (
-          <Card className="bg-white border-slate-200/80 shadow-xs">
-            <CardHeader className="border-b border-slate-100 pb-3">
-              <CardTitle className="text-base font-semibold text-slate-900">
-                ၂။ အော်ဒါ အမျိုးအစား
+          <Card className="bg-card text-card-foreground border-border shadow-soft rounded-2xl">
+            <CardHeader className="border-b border-border/60 pb-3">
+              <CardTitle className="text-base font-semibold text-foreground">
+                2. {t("orders.form.order_type")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
@@ -394,26 +396,26 @@ export function OrderForm({
                         <label
                           htmlFor="type-stock"
                           className={cn(
-                            "flex items-center gap-2.5 rounded-lg border p-3.5 cursor-pointer text-sm font-medium transition-colors",
+                            "flex items-center gap-2.5 rounded-xl border p-3.5 cursor-pointer text-sm font-medium transition-colors",
                             field.value === "stock"
-                              ? "border-primary bg-primary/5 text-primary"
-                              : "border-slate-200 bg-white text-slate-700"
+                              ? "border-primary bg-primary/10 text-primary font-semibold"
+                              : "border-border bg-card text-foreground hover:bg-muted"
                           )}
                         >
                           <RadioGroupItem value="stock" id="type-stock" />
-                          <span>လက်ကျန် (Stock)</span>
+                          <span>{t("orders.form.type_stock")}</span>
                         </label>
                         <label
                           htmlFor="type-preorder"
                           className={cn(
-                            "flex items-center gap-2.5 rounded-lg border p-3.5 cursor-pointer text-sm font-medium transition-colors",
+                            "flex items-center gap-2.5 rounded-xl border p-3.5 cursor-pointer text-sm font-medium transition-colors",
                             field.value === "preorder"
-                              ? "border-primary bg-primary/5 text-primary"
-                              : "border-slate-200 bg-white text-slate-700"
+                              ? "border-primary bg-primary/10 text-primary font-semibold"
+                              : "border-border bg-card text-foreground hover:bg-muted"
                           )}
                         >
                           <RadioGroupItem value="preorder" id="type-preorder" />
-                          <span>ကြိုမှာ (Pre-order)</span>
+                          <span>{t("orders.form.type_preorder")}</span>
                         </label>
                       </RadioGroup>
                     </FormControl>
@@ -426,10 +428,10 @@ export function OrderForm({
         )}
 
         {/* Section C: Items */}
-        <Card className="bg-white border-slate-200/80 shadow-xs">
-          <CardHeader className="border-b border-slate-100 pb-3 flex flex-row items-center justify-between">
-            <CardTitle className="text-base font-semibold text-slate-900">
-              ၃။ ပစ္စည်းများ
+        <Card className="bg-card text-card-foreground border-border shadow-soft rounded-2xl">
+          <CardHeader className="border-b border-border/60 pb-3 flex flex-row items-center justify-between">
+            <CardTitle className="text-base font-semibold text-foreground">
+              3. {t("orders.form.products")}
             </CardTitle>
             <Button
               type="button"
@@ -438,10 +440,10 @@ export function OrderForm({
               onClick={() =>
                 append({ product_id: products[0]?.id || "", quantity: 1 })
               }
-              className="gap-1.5 h-9 text-xs font-medium border-slate-200"
+              className="gap-1.5 h-9 text-xs font-medium rounded-xl border-border bg-card text-foreground hover:bg-muted shadow-soft"
             >
               <Plus className="h-3.5 w-3.5" />
-              ပစ္စည်းထည့်
+              {t("orders.form.add_product")}
             </Button>
           </CardHeader>
           <CardContent className="pt-4 space-y-3">
@@ -457,7 +459,7 @@ export function OrderForm({
               return (
                 <div
                   key={fieldItem.id}
-                  className="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 space-y-3"
+                  className="p-3.5 rounded-xl border border-border bg-muted/40 space-y-3"
                 >
                   <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                     {/* Select product */}
@@ -474,17 +476,17 @@ export function OrderForm({
                                   if (val) field.onChange(val);
                                 }}
                               >
-                                <SelectTrigger className="h-12 w-full bg-white border-slate-200 text-sm">
+                                <SelectTrigger className="h-11 w-full bg-background text-foreground border-input text-sm rounded-xl">
                                   <span className="truncate">
                                     {field.value
-                                      ? products.find((p) => p.id === field.value)?.name ?? "ပစ္စည်း ရွေးပါ"
-                                      : "ပစ္စည်း ရွေးပါ"}
+                                      ? products.find((p) => p.id === field.value)?.name ?? t("orders.form.select_product")
+                                      : t("orders.form.select_product")}
                                   </span>
                                 </SelectTrigger>
-                                <SelectContent>
-                                  {products.map((product) => (
-                                    <SelectItem key={product.id} value={product.id}>
-                                      {product.name} — {Number(product.price).toLocaleString()} ကျပ်
+                                <SelectContent className="rounded-xl">
+                                  {products.map((p) => (
+                                    <SelectItem key={p.id} value={p.id}>
+                                      {p.name} — {Number(p.price).toLocaleString()} MMK
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -517,7 +519,7 @@ export function OrderForm({
                                     val === "" ? "" : Number(val)
                                   );
                                 }}
-                                className="h-12 text-center bg-white border-slate-200 font-semibold"
+                                className="h-11 text-center bg-background text-foreground border-input font-semibold rounded-xl"
                               />
                             </FormControl>
                             <FormMessage />
@@ -531,21 +533,21 @@ export function OrderForm({
                         size="icon"
                         disabled={fields.length <= 1}
                         onClick={() => remove(index)}
-                        className="h-12 w-12 text-slate-400 hover:text-red-600 disabled:opacity-30 shrink-0"
+                        className="h-11 w-11 text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-30 shrink-0 rounded-xl"
                       >
                         <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">ဖျက်မည်</span>
+                        <span className="sr-only">{t("delete")}</span>
                       </Button>
                     </div>
                   </div>
 
                   {/* Subtotal */}
-                  <div className="flex justify-between items-center text-xs text-slate-500 pt-1 border-t border-slate-200/60">
+                  <div className="flex justify-between items-center text-xs text-muted-foreground pt-1 border-t border-border/60">
                     <span>
-                      တစ်ခုလျှင်: {product ? Number(product.price).toLocaleString() : 0} ကျပ်
+                      {t("orders.form.unit_price")} {product ? Number(product.price).toLocaleString() : 0} MMK
                     </span>
-                    <span className="font-semibold text-slate-800 text-sm">
-                      စုစုပေါင်း: {subtotal.toLocaleString()} ကျပ်
+                    <span className="font-semibold text-foreground text-sm">
+                      {t("orders.form.subtotal")} {subtotal.toLocaleString()} MMK
                     </span>
                   </div>
                 </div>
@@ -553,20 +555,20 @@ export function OrderForm({
             })}
 
             {/* Total summary */}
-            <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-base font-bold text-slate-900">
-              <span>စုစုပေါင်း တန်ဖိုး</span>
+            <div className="pt-3 border-t border-border flex items-center justify-between text-base font-bold text-foreground">
+              <span>{t("orders.form.total")}</span>
               <span className="text-primary text-lg">
-                {total.toLocaleString()} ကျပ်
+                {total.toLocaleString()} MMK
               </span>
             </div>
           </CardContent>
         </Card>
 
         {/* Section D: Payment */}
-        <Card className="bg-white border-slate-200/80 shadow-xs">
-          <CardHeader className="border-b border-slate-100 pb-3">
-            <CardTitle className="text-base font-semibold text-slate-900">
-              ၄။ ငွေပေးချေမှု
+        <Card className="bg-card text-card-foreground border-border shadow-soft rounded-2xl">
+          <CardHeader className="border-b border-border/60 pb-3">
+            <CardTitle className="text-base font-semibold text-foreground">
+              4. {t("orders.form.payment")}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4 space-y-4">
@@ -577,8 +579,8 @@ export function OrderForm({
                 name="deposit_paid"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-slate-700">
-                      စရံ ပေးပြီး (ကျပ်)
+                    <FormLabel className="text-sm font-medium text-foreground">
+                      {t("orders.form.deposit_paid")}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -593,7 +595,7 @@ export function OrderForm({
                             e.target.value === "" ? "" : Number(e.target.value)
                           )
                         }
-                        className="h-12 text-base bg-white border-slate-200"
+                        className="h-11 text-base bg-background text-foreground border-input rounded-xl"
                       />
                     </FormControl>
                     <FormMessage />
@@ -607,8 +609,8 @@ export function OrderForm({
                 name="payment_method"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-slate-700">
-                      ငွေပေးချေမှု နည်းလမ်း *
+                    <FormLabel className="text-sm font-medium text-foreground">
+                      {t("orders.form.payment_method")}
                     </FormLabel>
                     <FormControl>
                       <Select
@@ -617,24 +619,24 @@ export function OrderForm({
                           if (val) field.onChange(val);
                         }}
                       >
-                        <SelectTrigger className="h-12 w-full bg-white border-slate-200 text-base">
+                        <SelectTrigger className="h-11 w-full bg-background text-foreground border-input text-base rounded-xl">
                           <span>
                             {field.value === "kbz_pay"
                               ? "KBZ Pay"
                               : field.value === "wave_pay"
                               ? "Wave Pay"
                               : field.value === "cash"
-                              ? "လက်ငင်း"
+                              ? t("orders.form.method_cash")
                               : field.value === "cod"
-                              ? "ပို့ချိန်ပေး (COD)"
-                              : "ငွေပေးချေမှု ရွေးပါ"}
+                              ? t("orders.form.method_cod")
+                              : t("orders.form.method_select")}
                           </span>
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-xl">
                           <SelectItem value="kbz_pay">KBZ Pay</SelectItem>
                           <SelectItem value="wave_pay">Wave Pay</SelectItem>
-                          <SelectItem value="cash">လက်ငင်း</SelectItem>
-                          <SelectItem value="cod">ပို့ချိန်ပေး (COD)</SelectItem>
+                          <SelectItem value="cash">{t("orders.form.method_cash")}</SelectItem>
+                          <SelectItem value="cod">{t("orders.form.method_cod")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>
@@ -645,20 +647,22 @@ export function OrderForm({
             </div>
 
             {/* Balance due computation display */}
-            <div className="p-3.5 rounded-lg bg-amber-50/60 border border-amber-200/60 flex items-center justify-between text-sm">
-              <span className="text-amber-800 font-medium">ကျန်ငွေ ပမာဏ</span>
-              <span className="text-amber-900 font-bold text-base tabular-nums">
-                {balanceDue.toLocaleString()} ကျပ်
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between text-sm">
+              <span className="text-amber-600 dark:text-amber-400 font-medium">
+                {t("orders.form.balance_due")}
+              </span>
+              <span className="text-amber-700 dark:text-amber-300 font-bold text-base tabular-nums">
+                {balanceDue.toLocaleString()} MMK
               </span>
             </div>
           </CardContent>
         </Card>
 
         {/* Section E: Note */}
-        <Card className="bg-white border-slate-200/80 shadow-xs">
-          <CardHeader className="border-b border-slate-100 pb-3">
-            <CardTitle className="text-base font-semibold text-slate-900">
-              ၅။ မှတ်ချက်
+        <Card className="bg-card text-card-foreground border-border shadow-soft rounded-2xl">
+          <CardHeader className="border-b border-border/60 pb-3">
+            <CardTitle className="text-base font-semibold text-foreground">
+              5. {t("orders.form.note")}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
@@ -671,8 +675,8 @@ export function OrderForm({
                     <Textarea
                       {...field}
                       rows={3}
-                      placeholder="ပို့ဆောင်ရမည့် လိပ်စာ သို့မဟုတ် အခြား မှတ်ချက်များ"
-                      className="text-base bg-white border-slate-200"
+                      placeholder={t("orders.form.note_placeholder")}
+                      className="text-base bg-background text-foreground border-input rounded-xl"
                     />
                   </FormControl>
                   <FormMessage />
@@ -686,15 +690,16 @@ export function OrderForm({
         <div className="pt-2">
           <Button
             type="submit"
+            variant="premium"
             disabled={isSubmitting}
-            className="h-12 w-full text-base font-semibold shadow-xs"
+            className="h-11 w-full text-base font-semibold shadow-soft hover:shadow-lift rounded-xl"
           >
             {isSubmitting ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : orderId ? (
-              "အော်ဒါ ပြင်ဆင်"
+              t("orders.form.submit_edit")
             ) : (
-              "အော်ဒါ ဖန်တီး"
+              t("orders.form.submit")
             )}
           </Button>
         </div>
@@ -702,3 +707,5 @@ export function OrderForm({
     </Form>
   );
 }
+
+export default OrderForm;

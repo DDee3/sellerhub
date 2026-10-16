@@ -16,7 +16,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MyanmarDate } from "@/components/dashboard/myanmar-date";
 import { Greeting } from "@/components/dashboard/greeting";
 import { useLanguage } from "@/components/providers/language-provider";
 
@@ -73,14 +72,7 @@ export function DashboardView({
     <div key={language} className="space-y-6 pb-8">
       {/* 1. Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            <Greeting name={shop.name} />
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            <MyanmarDate />
-          </p>
-        </div>
+        <Greeting name={shop.name} />
 
         {/* Quick Actions */}
         <div className="flex items-center gap-2.5 pt-1 sm:pt-0">
