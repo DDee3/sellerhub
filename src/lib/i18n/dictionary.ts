@@ -333,6 +333,22 @@ export const dict = {
     "customers.detail.address": "Address",
     "customers.detail.orders": "Orders",
     "customers.detail.no_orders": "No orders yet",
+
+    // auth
+    "auth.login_title": "Welcome back",
+    "auth.login_subtitle": "Sign in to your account",
+    "auth.email": "Email",
+    "auth.password": "Password",
+    "auth.signing_in": "Signing in...",
+    "auth.login_button": "Sign In",
+    "auth.no_account": "Don't have an account?",
+    "auth.signup_link": "Sign up",
+    "auth.error_email_required": "Please enter your email",
+    "auth.error_email_invalid": "Please enter a valid email address",
+    "auth.error_password_required": "Please enter your password",
+    "auth.error_login_failed": "Sign in failed",
+    "auth.error_login_success": "Signed in successfully",
+    "auth.error_unexpected": "Something went wrong. Please try again.",
   },
   my: {
     // nav
@@ -668,6 +684,22 @@ export const dict = {
     "customers.detail.address": "လိပ်စာ",
     "customers.detail.orders": "အော်ဒါများ",
     "customers.detail.no_orders": "အော်ဒါ မရှိသေးပါ",
+
+    // auth
+    "auth.login_title": "အကောင့်ဝင်ရောက်ရန်",
+    "auth.login_subtitle": "သင့်အကောင့်အချက်အလက်များကို ထည့်သွင်းပါ",
+    "auth.email": "အီးမေးလ်",
+    "auth.password": "စကားဝှက်",
+    "auth.signing_in": "ဝင်ရောက်နေသည်...",
+    "auth.login_button": "ဝင်ရောက်ရန်",
+    "auth.no_account": "အကောင့်မရှိသေးဘူးလား?",
+    "auth.signup_link": "အကောင့်ဖွင့်ရန်",
+    "auth.error_email_required": "အီးမေးလ် ထည့်သွင်းပေးပါ",
+    "auth.error_email_invalid": "မှန်ကန်သော အီးမေးလ် လိပ်စာ ဖြစ်ရပါမည်",
+    "auth.error_password_required": "စကားဝှက် ထည့်သွင်းပေးပါ",
+    "auth.error_login_failed": "အကောင့်ဝင်ရောက်မှု မအောင်မြင်ပါ",
+    "auth.error_login_success": "အောင်မြင်စွာ ဝင်ရောက်ပြီးပါပြီ",
+    "auth.error_unexpected": "တစ်ခုခု မှားယွင်းနေပါသည်။ ထပ်မံကြိုးစားကြည့်ပါ။",
   },
 } as const;
 

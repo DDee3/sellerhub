@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -21,22 +21,31 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useLanguage } from "@/components/providers/language-provider";
 
-const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, { message: "အီးမေးလ် ထည့်သွင်းပေးပါ" })
-    .email({ message: "မှန်ကန်သော အီးမေးလ် လိပ်စာ ဖြစ်ရပါမည်" }),
-  password: z
-    .string()
-    .min(1, { message: "စကားဝှက် ထည့်သွင်းပေးပါ" }),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+interface LoginFormValues {
+  email: string;
+  password: string;
+}
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
+
+  const loginSchema = useMemo(
+    () =>
+      z.object({
+        email: z
+          .string()
+          .min(1, { message: t("auth.error_email_required") })
+          .email({ message: t("auth.error_email_invalid") }),
+        password: z
+          .string()
+          .min(1, { message: t("auth.error_password_required") }),
+      }),
+    [t]
+  );
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -61,16 +70,16 @@ export default function LoginPage() {
       console.log("[Login] signInWithPassword result:", { user: data?.user?.id, error });
 
       if (error) {
-        toast.error(error.message || "အကောင့်ဝင်ရောက်မှု မအောင်မြင်ပါ");
+        toast.error(error.message || t("auth.error_login_failed"));
         return;
       }
 
-      toast.success("အောင်မြင်စွာ ဝင်ရောက်ပြီးပါပြီ");
+      toast.success(t("auth.error_login_success"));
       router.push("/dashboard");
       router.refresh();
     } catch (err: unknown) {
       console.error("[Login] Unexpected catch error:", err);
-      toast.error("တစ်ခုခု မှားယွင်းနေပါသည်။ ထပ်မံကြိုးစားကြည့်ပါ။");
+      toast.error(t("auth.error_unexpected"));
     } finally {
       setIsLoading(false);
     }
@@ -79,11 +88,11 @@ export default function LoginPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1 text-center">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">
-          အကောင့်ဝင်ရောက်ရန်
+        <h1 className="text-xl font-bold tracking-tight text-foreground">
+          {t("auth.login_title")}
         </h1>
-        <p className="text-sm text-slate-500">
-          သင့်အကောင့်အချက်အလက်များကို ထည့်သွင်းပါ
+        <p className="text-sm text-muted-foreground">
+          {t("auth.login_subtitle")}
         </p>
       </div>
 
@@ -101,8 +110,8 @@ export default function LoginPage() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-slate-700">
-                  အီးမေးလ်
+                <FormLabel className="text-sm font-medium text-foreground">
+                  {t("auth.email")}
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -111,7 +120,7 @@ export default function LoginPage() {
                     placeholder="example@mail.com"
                     autoComplete="email"
                     disabled={isLoading}
-                    className="h-12 text-base px-4 bg-slate-50/50"
+                    className="h-12 text-base px-4 bg-muted/50 border-input"
                   />
                 </FormControl>
                 <FormMessage />
@@ -124,8 +133,8 @@ export default function LoginPage() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-slate-700">
-                  စကားဝှက်
+                <FormLabel className="text-sm font-medium text-foreground">
+                  {t("auth.password")}
                 </FormLabel>
                 <FormControl>
                   <PasswordInput
@@ -133,7 +142,7 @@ export default function LoginPage() {
                     placeholder="••••••••"
                     autoComplete="current-password"
                     disabled={isLoading}
-                    className="h-12 text-base px-4 bg-slate-50/50"
+                    className="h-12 text-base px-4 bg-muted/50 border-input"
                   />
                 </FormControl>
                 <FormMessage />
@@ -149,23 +158,23 @@ export default function LoginPage() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                ဝင်ရောက်နေသည်...
+                {t("auth.signing_in")}
               </>
             ) : (
-              "ဝင်ရောက်ရန်"
+              t("auth.login_button")
             )}
           </Button>
         </form>
       </Form>
 
-      <div className="text-center pt-2 border-t border-slate-100">
-        <p className="text-sm text-slate-600">
-          အကောင့်မရှိသေးဘူးလား?{" "}
+      <div className="text-center pt-2 border-t border-border">
+        <p className="text-sm text-muted-foreground">
+          {t("auth.no_account")}{" "}
           <Link
             href="/signup"
             className="font-semibold text-primary hover:underline underline-offset-4"
           >
-            အကောင့်ဖွင့်ရန်
+            {t("auth.signup_link")}
           </Link>
         </p>
       </div>
