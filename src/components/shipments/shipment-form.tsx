@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Resolver } from "react-hook-form";
 import { useForm } from "react-hook-form";
@@ -29,38 +30,45 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import { useLanguage } from "@/components/providers/language-provider";
 
 interface ShipmentFormProps {
   initialValues?: ShipmentFormValues;
   shipmentId?: string;
 }
 
-const statusLabels: Record<string, string> = {
-  ordering: "မှာယူနေ",
-  in_transit: "လမ်းပေါ်",
-  arrived: "ရောက်ပြီ",
-  delivering: "ပို့နေ",
-  completed: "ပြီးစီး",
-};
-
 export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
   const router = useRouter();
   const supabase = createClient();
+  const { t } = useLanguage();
 
-  const defaultOrderDate = new Date().toISOString().slice(0, 10);
+  const statusLabels: Record<string, string> = {
+    ordering: t("shipments.status_ordering"),
+    in_transit: t("shipments.status_in_transit"),
+    arrived: t("shipments.status_arrived"),
+    delivering: t("shipments.status_delivering"),
+    completed: t("shipments.status_completed"),
+  };
 
   const form = useForm<ShipmentFormValues>({
     resolver: zodResolver(shipmentSchema) as unknown as Resolver<ShipmentFormValues>,
     defaultValues: initialValues || {
       name: "",
       source: "",
-      order_date: defaultOrderDate,
+      order_date: "",
       arrive_date: "",
       status: "ordering",
       total_cost: 0,
       note: "",
     },
   });
+
+  // Client-side initialization of current date to prevent prerender errors
+  useEffect(() => {
+    if (!initialValues?.order_date && !form.getValues("order_date")) {
+      form.setValue("order_date", new Date().toISOString().slice(0, 10));
+    }
+  }, [form, initialValues]);
 
   const { isSubmitting } = form.formState;
 
@@ -89,7 +97,7 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
 
         if (error) throw error;
 
-        toast.success("သိမ်းဆည်းပြီးပါပြီ");
+        toast.success(t("shipments.form.success"));
         router.push(`/shipments/${shipmentId}`);
         router.refresh();
       } else {
@@ -99,7 +107,7 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
         } = await supabase.auth.getUser();
 
         if (userError || !user) {
-          throw new Error("အကောင့်ဝင်ရန် လိုအပ်သည်");
+          throw new Error(t("products.form.error_auth"));
         }
 
         const { data: shop, error: shopError } = await supabase
@@ -109,7 +117,7 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
           .single();
 
         if (shopError || !shop) {
-          throw new Error("ဆိုင် မတွေ့ပါ");
+          throw new Error(t("products.form.error_shop"));
         }
 
         const { error } = await supabase.from("shipments").insert({
@@ -125,7 +133,7 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
 
         if (error) throw error;
 
-        toast.success("ပို့ဆောင်မှု သိမ်းပြီးပါပြီ");
+        toast.success(t("shipments.form.success"));
         router.push("/shipments");
         router.refresh();
       }
@@ -133,7 +141,7 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
       const message =
         err instanceof Error
           ? err.message
-          : "ပို့ဆောင်မှု သိမ်းဆည်းရာတွင် အမှားတစ်ခု ဖြစ်ပွားခဲ့သည်";
+          : "An unexpected error occurred while saving the shipment";
       toast.error(message);
     }
   };
@@ -147,13 +155,13 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                အမည်
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("shipments.form.name")}
               </FormLabel>
               <FormControl>
                 <Input
-                  className="h-12 bg-white border-slate-200 text-base"
-                  placeholder="ဥပမာ: Bangkok Trip 1"
+                  className="h-12 bg-background text-foreground border-input text-base"
+                  placeholder={t("shipments.form.placeholder_name")}
                   {...field}
                 />
               </FormControl>
@@ -168,13 +176,13 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
           name="source"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                မူရင်း
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("shipments.form.source")}
               </FormLabel>
               <FormControl>
                 <Input
-                  className="h-12 bg-white border-slate-200 text-base"
-                  placeholder="Thailand / China / Korea"
+                  className="h-12 bg-background text-foreground border-input text-base"
+                  placeholder={t("shipments.form.placeholder_source")}
                   {...field}
                 />
               </FormControl>
@@ -189,13 +197,13 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
           name="order_date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                မှာယူသည့်ရက်
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("shipments.form.order_date")}
               </FormLabel>
               <FormControl>
                 <Input
                   type="date"
-                  className="h-12 bg-white border-slate-200 text-base"
+                  className="h-12 bg-background text-foreground border-input text-base"
                   {...field}
                 />
               </FormControl>
@@ -210,13 +218,13 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
           name="arrive_date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                ရောက်မည့်ရက် (မသေချာပါက ချန်ထား)
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("shipments.form.arrive_date_hint")}
               </FormLabel>
               <FormControl>
                 <Input
                   type="date"
-                  className="h-12 bg-white border-slate-200 text-base"
+                  className="h-12 bg-background text-foreground border-input text-base"
                   value={field.value ?? ""}
                   onChange={(e) => field.onChange(e.target.value)}
                 />
@@ -232,8 +240,8 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
           name="status"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                အခြေအနေ
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("shipments.form.status")}
               </FormLabel>
               <FormControl>
                 <Select
@@ -242,15 +250,15 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
                     if (val) field.onChange(val);
                   }}
                 >
-                  <SelectTrigger className="h-12 w-full bg-white border-slate-200 text-base">
-                    <span>{statusLabels[field.value] ?? "အခြေအနေ ရွေးပါ"}</span>
+                  <SelectTrigger className="h-12 w-full bg-background text-foreground border-input text-base">
+                    <span>{statusLabels[field.value] ?? t("shipments.form.select_status")}</span>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ordering">မှာယူနေ</SelectItem>
-                    <SelectItem value="in_transit">လမ်းပေါ်</SelectItem>
-                    <SelectItem value="arrived">ရောက်ပြီ</SelectItem>
-                    <SelectItem value="delivering">ပို့နေ</SelectItem>
-                    <SelectItem value="completed">ပြီးစီး</SelectItem>
+                    <SelectItem value="ordering">{t("shipments.status_ordering")}</SelectItem>
+                    <SelectItem value="in_transit">{t("shipments.status_in_transit")}</SelectItem>
+                    <SelectItem value="arrived">{t("shipments.status_arrived")}</SelectItem>
+                    <SelectItem value="delivering">{t("shipments.status_delivering")}</SelectItem>
+                    <SelectItem value="completed">{t("shipments.status_completed")}</SelectItem>
                   </SelectContent>
                 </Select>
               </FormControl>
@@ -265,8 +273,8 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
           name="total_cost"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                ကုန်ကျစရိတ် (ကျပ်)
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("shipments.form.total_cost")} ({t("currency")})
               </FormLabel>
               <FormControl>
                 <Input
@@ -274,7 +282,7 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
                   inputMode="numeric"
                   step="any"
                   min={0}
-                  className="h-12 bg-white border-slate-200 text-base"
+                  className="h-12 bg-background text-foreground border-input text-base"
                   placeholder="0"
                   value={field.value === 0 ? "" : (field.value ?? "")}
                   onChange={(e) =>
@@ -295,14 +303,14 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
           name="note"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                မှတ်ချက်
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("shipments.form.note")}
               </FormLabel>
               <FormControl>
                 <Textarea
                   rows={3}
-                  className="bg-white border-slate-200 text-base resize-none"
-                  placeholder="မှတ်ချက် ရေးရန် (ရှိပါက)"
+                  className="bg-background text-foreground border-input text-base resize-none"
+                  placeholder={t("shipments.form.note_placeholder")}
                   value={field.value ?? ""}
                   onChange={(e) => field.onChange(e.target.value)}
                 />
@@ -316,13 +324,12 @@ export function ShipmentForm({ initialValues, shipmentId }: ShipmentFormProps) {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-12 text-base font-semibold shadow-xs"
+          className="w-full h-12 text-base font-semibold shadow-soft"
         >
           {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-          သိမ်းဆည်း
+          {isSubmitting ? t("shipments.form.saving") : t("shipments.form.submit")}
         </Button>
       </form>
     </Form>
   );
 }
-
