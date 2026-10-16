@@ -12,6 +12,7 @@ import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import {
   Form,
   FormControl,
@@ -255,9 +256,8 @@ export default function SignupPage() {
                   စကားဝှက် (အနည်းဆုံး ၆ လုံး)
                 </FormLabel>
                 <FormControl>
-                  <Input
+                  <PasswordInput
                     {...field}
-                    type="password"
                     placeholder="••••••••"
                     autoComplete="new-password"
                     disabled={isLoading}
@@ -278,9 +278,8 @@ export default function SignupPage() {
                   စကားဝှက် အတည်ပြုပါ
                 </FormLabel>
                 <FormControl>
-                  <Input
+                  <PasswordInput
                     {...field}
-                    type="password"
                     placeholder="••••••••"
                     autoComplete="new-password"
                     disabled={isLoading}

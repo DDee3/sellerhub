@@ -12,6 +12,7 @@ import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import {
   Form,
   FormControl,
@@ -127,9 +128,8 @@ export default function LoginPage() {
                   စကားဝှက်
                 </FormLabel>
                 <FormControl>
-                  <Input
+                  <PasswordInput
                     {...field}
-                    type="password"
                     placeholder="••••••••"
                     autoComplete="current-password"
                     disabled={isLoading}
