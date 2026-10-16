@@ -1,8 +1,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Bell } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { UserAvatarDropdown } from "@/components/dashboard/user-avatar-dropdown";
 import { useLanguage } from "@/components/providers/language-provider";
@@ -36,20 +34,9 @@ export function TopBar({ shopName }: { shopName?: string }) {
       </div>
 
       <div className="flex items-center gap-3">
-        {/* Unified Control Bar: Theme & Notification */}
-        <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-full border border-border/50 shadow-soft">
+        {/* Theme Toggle */}
+        <div className="flex items-center bg-muted/50 p-1 rounded-full border border-border/50 shadow-soft">
           <ThemeToggle />
-
-          {/* Notification bell */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative text-muted-foreground hover:text-foreground h-9 w-9 rounded-full active:scale-95 transition-all duration-200"
-            aria-label="အသိပေးချက်များ"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
-          </Button>
         </div>
 
         {/* User / Shop Avatar Dropdown */}
