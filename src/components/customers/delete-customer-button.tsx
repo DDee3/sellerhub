@@ -17,6 +17,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+import { useLanguage } from "@/components/providers/language-provider";
 
 interface DeleteCustomerButtonProps {
   customerId: string;
@@ -31,6 +32,7 @@ export function DeleteCustomerButton({
 }: DeleteCustomerButtonProps) {
   const router = useRouter();
   const supabase = createClient();
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -38,9 +40,9 @@ export function DeleteCustomerButton({
     return (
       <Button
         type="button"
-        variant="destructive"
+        variant="ghost"
         size="sm"
-        className="gap-1.5 opacity-50 cursor-not-allowed"
+        className="gap-1.5 text-destructive/50 hover:bg-transparent cursor-not-allowed"
         title="အော်ဒါများ ရှိသဖြင့် ဖျက်၍ မရပါ"
         onClick={() => {
           toast.error(
@@ -48,8 +50,8 @@ export function DeleteCustomerButton({
           );
         }}
       >
-        <Trash2 className="h-3.5 w-3.5" />
-        ဖျက်မည်
+        <Trash2 className="h-4 w-4" />
+        {t("common.delete")}
       </Button>
     );
   }
@@ -67,7 +69,7 @@ export function DeleteCustomerButton({
         return;
       }
 
-      toast.success("ဖျက်ပြီးပါပြီ");
+      toast.success(t("common.delete"));
       setOpen(false);
       router.push("/customers");
       router.refresh();
@@ -90,28 +92,28 @@ export function DeleteCustomerButton({
         render={
           <Button
             type="button"
-            variant="destructive"
+            variant="ghost"
             size="sm"
-            className="gap-1.5"
+            className="gap-1.5 text-destructive hover:bg-destructive/10"
             disabled={isDeleting}
           >
-            <Trash2 className="h-3.5 w-3.5" />
-            ဖျက်မည်
+            <Trash2 className="h-4 w-4" />
+            {t("common.delete")}
           </Button>
         }
       />
-      <DialogContent>
+      <DialogContent className="bg-card text-card-foreground border-border shadow-lift rounded-2xl">
         <DialogHeader>
-          <DialogTitle>ဖျက်ရန် သေချာပါသလား?</DialogTitle>
-          <DialogDescription>
-            ဝယ်ယူသူ &ldquo;{customerName}&rdquo; ကို အပြီးတိုင် ဖျက်ပါမည်။ ဤလုပ်ဆောင်ချက်ကို ပြန်လည်ပြင်ဆင်၍ မရနိုင်ပါ။
+          <DialogTitle className="text-foreground">{t("common.delete")}?</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            &ldquo;{customerName}&rdquo;
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">
           <DialogClose
             render={
-              <Button type="button" variant="outline" disabled={isDeleting}>
-                မလုပ်တော့ပါ
+              <Button type="button" variant="outline" disabled={isDeleting} className="rounded-xl border-border bg-card text-foreground hover:bg-muted">
+                {t("common.cancel")}
               </Button>
             }
           />
@@ -120,14 +122,15 @@ export function DeleteCustomerButton({
             variant="destructive"
             onClick={handleDelete}
             disabled={isDeleting}
-            className="gap-2"
+            className="gap-2 rounded-xl"
           >
             {isDeleting && <Loader2 className="h-4 w-4 animate-spin" />}
-            ဖျက်မည်
+            {t("common.delete")}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
 

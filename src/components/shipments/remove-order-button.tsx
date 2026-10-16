@@ -17,6 +17,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+import { useLanguage } from "@/components/providers/language-provider";
 
 interface RemoveOrderButtonProps {
   orderId: string;
@@ -25,6 +26,7 @@ interface RemoveOrderButtonProps {
 export function RemoveOrderButton({ orderId }: RemoveOrderButtonProps) {
   const router = useRouter();
   const supabase = createClient();
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
 
@@ -41,12 +43,12 @@ export function RemoveOrderButton({ orderId }: RemoveOrderButtonProps) {
         return;
       }
 
-      toast.success("ဖယ်ရှားပြီးပါပြီ");
+      toast.success(t("delete") || "Removed");
       setOpen(false);
       router.refresh();
     } catch (err: unknown) {
       toast.error(
-        err instanceof Error ? err.message : "အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်"
+        err instanceof Error ? err.message : t("error")
       );
     } finally {
       setIsRemoving(false);
@@ -61,26 +63,28 @@ export function RemoveOrderButton({ orderId }: RemoveOrderButtonProps) {
             type="button"
             variant="ghost"
             size="icon-xs"
-            className="text-slate-400 hover:text-red-600 hover:bg-red-50 h-7 w-7 rounded-md"
-            title="ဖယ်ရှားမည်"
+            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-7 w-7 rounded-lg"
+            title={t("delete")}
           >
             <X className="h-4 w-4" />
-            <span className="sr-only">ဖယ်ရှားမည်</span>
+            <span className="sr-only">{t("delete")}</span>
           </Button>
         }
       />
-      <DialogContent>
+      <DialogContent className="bg-card text-card-foreground border-border shadow-lift rounded-2xl">
         <DialogHeader>
-          <DialogTitle>ဤအော်ဒါကို ပို့ဆောင်မှုမှ ဖယ်ရှားမည်လား?</DialogTitle>
-          <DialogDescription>
-            ဤအော်ဒါကို ပို့ဆောင်မှုမှ ဖယ်ထုတ်ပါမည်။ အော်ဒါသည် ပျက်ပြယ်မည် မဟုတ်ပါ။
+          <DialogTitle className="text-foreground">
+            {t("common.delete")}?
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            {t("shipments.detail.orders")}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">
           <DialogClose
             render={
-              <Button type="button" variant="outline" disabled={isRemoving}>
-                မလုပ်တော့ပါ
+              <Button type="button" variant="outline" disabled={isRemoving} className="rounded-xl border-border bg-card text-foreground hover:bg-muted">
+                {t("common.cancel")}
               </Button>
             }
           />
@@ -89,14 +93,13 @@ export function RemoveOrderButton({ orderId }: RemoveOrderButtonProps) {
             variant="destructive"
             onClick={handleRemove}
             disabled={isRemoving}
-            className="gap-2"
+            className="gap-2 rounded-xl"
           >
             {isRemoving && <Loader2 className="h-4 w-4 animate-spin" />}
-            ဖယ်ရှားမည်
+            {t("common.delete")}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import type { ShipmentStatus } from "@/lib/queries/shipments";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/components/providers/language-provider";
 
 interface ShipmentStatusActionsProps {
   shipmentId: string;
@@ -20,18 +21,18 @@ export function ShipmentStatusActions({
 }: ShipmentStatusActionsProps) {
   const router = useRouter();
   const supabase = createClient();
+  const { t } = useLanguage();
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleAdvance = async (nextStatus: ShipmentStatus) => {
     setIsUpdating(true);
     try {
-      console.log("[status] shipmentId:", shipmentId, "next:", nextStatus);
       const shipRes = await supabase
         .from("shipments")
         .update({ status: nextStatus })
         .eq("id", shipmentId)
         .select();
-      console.log("[status] ship result:", shipRes);
+
       if (shipRes.error) {
         throw shipRes.error;
       }
@@ -43,13 +44,13 @@ export function ShipmentStatusActions({
           .eq("shipment_id", shipmentId)
           .in("status", ["pending", "confirmed"])
           .select();
-        console.log("[status] ord result:", ordRes);
+
         if (ordRes.error) {
           throw ordRes.error;
         }
       }
 
-      toast.success("အခြေအနေ ပြောင်းပြီးပါပြီ");
+      toast.success(t("settings.saved_success"));
       router.refresh();
     } catch (error: unknown) {
       console.error("[status] caught error:", error);
@@ -58,7 +59,7 @@ export function ShipmentStatusActions({
           ? error.message
           : typeof error === "object" && error !== null && "message" in error
           ? String((error as { message: unknown }).message)
-          : "အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်";
+          : t("error");
       toast.error(message);
     } finally {
       setIsUpdating(false);
@@ -67,9 +68,9 @@ export function ShipmentStatusActions({
 
   if (currentStatus === "completed") {
     return (
-      <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm font-medium">
-        <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-        <span>ပြီးစီးပါပြီ</span>
+      <div className="flex items-center gap-2 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-emerald-700 dark:text-emerald-300 text-sm font-medium">
+        <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+        <span>{t("shipments.status_completed")}</span>
       </div>
     );
   }
@@ -80,10 +81,10 @@ export function ShipmentStatusActions({
         <Button
           onClick={() => handleAdvance("in_transit")}
           disabled={isUpdating}
-          className="w-full h-11 font-semibold shadow-xs"
+          className="w-full h-11 font-semibold shadow-soft rounded-xl"
         >
           {isUpdating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-          လမ်းပေါ် ရောက်ပြီ
+          {t("shipments.detail.advance_status")}
         </Button>
       )}
 
@@ -91,10 +92,10 @@ export function ShipmentStatusActions({
         <Button
           onClick={() => handleAdvance("arrived")}
           disabled={isUpdating}
-          className="w-full h-11 font-semibold shadow-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+          className="w-full h-11 font-semibold shadow-soft rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
         >
           {isUpdating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-          မြန်မာ ရောက်ပြီ
+          {t("shipments.status_arrived")}
         </Button>
       )}
 
@@ -102,10 +103,10 @@ export function ShipmentStatusActions({
         <Button
           onClick={() => handleAdvance("delivering")}
           disabled={isUpdating}
-          className="w-full h-11 font-semibold shadow-xs bg-amber-600 hover:bg-amber-700 text-white"
+          className="w-full h-11 font-semibold shadow-soft rounded-xl bg-amber-600 hover:bg-amber-700 text-white"
         >
           {isUpdating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-          ပို့နေပြီ
+          {t("shipments.status_delivering")}
         </Button>
       )}
 
@@ -113,13 +114,12 @@ export function ShipmentStatusActions({
         <Button
           onClick={() => handleAdvance("completed")}
           disabled={isUpdating}
-          className="w-full h-11 font-semibold shadow-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+          className="w-full h-11 font-semibold shadow-soft rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
         >
           {isUpdating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-          ပြီးစီးပါပြီ
+          {t("shipments.status_completed")}
         </Button>
       )}
     </div>
   );
 }
-

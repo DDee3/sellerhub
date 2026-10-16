@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useLanguage } from "@/components/providers/language-provider";
 import { cn } from "@/lib/utils";
 
 interface AssignOrdersButtonProps {
@@ -30,6 +31,7 @@ export function AssignOrdersButton({
 }: AssignOrdersButtonProps) {
   const router = useRouter();
   const supabase = createClient();
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,13 +59,13 @@ export function AssignOrdersButton({
         return;
       }
 
-      toast.success("အော်ဒါများ ပို့ဆောင်မှုထဲသို့ ထည့်ပြီးပါပြီ");
+      toast.success(t("orders.form.success"));
       setOpen(false);
       setSelectedOrderIds([]);
       router.refresh();
     } catch (err: unknown) {
       toast.error(
-        err instanceof Error ? err.message : "အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်"
+        err instanceof Error ? err.message : t("error")
       );
     } finally {
       setIsSubmitting(false);
@@ -74,26 +76,26 @@ export function AssignOrdersButton({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button className="w-full h-11 font-semibold gap-1.5 shadow-xs">
+          <Button className="w-full h-11 font-semibold gap-1.5 shadow-soft rounded-xl">
             <Plus className="h-4 w-4" />
-            အော်ဒါ ထည့်
+            {t("shipments.assign.title")}
           </Button>
         }
       />
-      <DialogContent className="max-w-md bg-white">
+      <DialogContent className="max-w-md bg-card text-card-foreground border-border shadow-lift rounded-2xl">
         <DialogHeader>
-          <DialogTitle className="text-base font-semibold text-slate-900">
-            ကြိုမှာအော်ဒါများ ရွေးချယ်ပါ
+          <DialogTitle className="text-base font-semibold text-foreground">
+            {t("shipments.assign.title")}
           </DialogTitle>
-          <DialogDescription className="text-xs text-slate-500">
-            ဤပို့ဆောင်မှုထဲသို့ ထည့်သွင်းမည့် အော်ဒါများကို ရွေးချယ်ပါ
+          <DialogDescription className="text-xs text-muted-foreground">
+            {t("shipments.assign.subtitle")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="max-h-72 overflow-y-auto space-y-2 py-2">
           {unassignedOrders.length === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-6">
-              ထည့်ရန် ကြိုမှာအော်ဒါ မရှိပါ
+              {t("shipments.assign.empty")}
             </p>
           ) : (
             unassignedOrders.map((order) => {
@@ -103,27 +105,27 @@ export function AssignOrdersButton({
                   key={order.id}
                   onClick={() => toggleOrder(order.id)}
                   className={cn(
-                    "flex items-center justify-between p-3 rounded-lg border text-sm cursor-pointer transition select-none",
+                    "flex items-center justify-between p-3 rounded-xl border text-sm cursor-pointer transition select-none",
                     isSelected
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-slate-200 hover:bg-slate-50"
+                      ? "border-primary bg-primary/10 ring-1 ring-primary"
+                      : "border-border hover:bg-muted/50 bg-card"
                   )}
                 >
                   <div className="flex-1 min-w-0 pr-3">
-                    <p className="font-medium text-slate-900 truncate">
+                    <p className="font-medium text-foreground truncate">
                       {order.customer_name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      ပစ္စည်း {order.items_count} မျိုး •{" "}
-                      {Number(order.total_price).toLocaleString()} ကျပ်
+                      {order.items_count} {t("orders.items_suffix")} •{" "}
+                      {Number(order.total_price).toLocaleString()} {t("currency")}
                     </p>
                   </div>
                   <div
                     className={cn(
                       "h-5 w-5 rounded-md border flex items-center justify-center shrink-0 transition",
                       isSelected
-                        ? "bg-primary border-primary text-white"
-                        : "border-slate-300 bg-white"
+                        ? "bg-primary border-primary text-primary-foreground"
+                        : "border-input bg-background"
                     )}
                   >
                     {isSelected && <Check className="h-3.5 w-3.5" />}
@@ -140,22 +142,21 @@ export function AssignOrdersButton({
             variant="outline"
             onClick={() => setOpen(false)}
             disabled={isSubmitting}
-            className="flex-1 sm:flex-initial"
+            className="flex-1 sm:flex-initial rounded-xl border-border bg-card text-foreground hover:bg-muted"
           >
-            မလုပ်တော့ပါ
+            {t("common.cancel")}
           </Button>
           <Button
             type="button"
             onClick={handleAssign}
             disabled={selectedOrderIds.length === 0 || isSubmitting}
-            className="flex-1 sm:flex-initial font-medium gap-1.5"
+            className="flex-1 sm:flex-initial font-medium gap-1.5 rounded-xl shadow-soft"
           >
             {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-            ထည့်သွင်းမည် ({selectedOrderIds.length})
+            {t("shipments.assign.confirm")} ({selectedOrderIds.length})
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-

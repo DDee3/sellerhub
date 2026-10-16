@@ -18,6 +18,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+import { useLanguage } from "@/components/providers/language-provider";
 
 interface OrderStatusActionsProps {
   orderId: string;
@@ -32,6 +33,7 @@ export function OrderStatusActions({
 }: OrderStatusActionsProps) {
   const router = useRouter();
   const supabase = createClient();
+  const { t } = useLanguage();
   const [isUpdating, setIsUpdating] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
@@ -144,16 +146,16 @@ export function OrderStatusActions({
     return (
       <div className="flex items-center gap-1.5 text-emerald-600 font-medium text-sm">
         <CheckCircle2 className="h-4 w-4" />
-        <span>ပေးပြီးပါပြီ</span>
+        <span>{t("orders.status_delivered")}</span>
       </div>
     );
   }
 
   if (currentStatus === "cancelled") {
     return (
-      <div className="flex items-center gap-1.5 text-slate-400 font-medium text-sm">
+      <div className="flex items-center gap-1.5 text-muted-foreground font-medium text-sm">
         <XCircle className="h-4 w-4" />
-        <span>ပယ်ဖျက်ပြီး</span>
+        <span>{t("orders.status_cancelled")}</span>
       </div>
     );
   }
@@ -162,12 +164,13 @@ export function OrderStatusActions({
     <div className="flex items-center gap-2">
       {currentStatus === "pending" && (
         <Button
+          variant="default"
           onClick={() => updateStatus("confirmed")}
           disabled={isUpdating}
-          className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+          className="gap-1.5 bg-primary text-primary-foreground font-medium"
         >
           {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />}
-          အတည်ပြု
+          {t("orders.payment.confirm")}
         </Button>
       )}
 
@@ -178,7 +181,7 @@ export function OrderStatusActions({
           className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
         >
           {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />}
-          ပေးပြီး
+          {t("orders.status_delivered")}
         </Button>
       )}
 
@@ -187,11 +190,11 @@ export function OrderStatusActions({
         <DialogTrigger
           render={
             <Button
-              variant="destructive"
+              variant="ghost"
               disabled={isUpdating}
-              className="gap-1.5 font-medium"
+              className="gap-1.5 font-medium text-muted-foreground hover:bg-muted"
             >
-              ပယ်ဖျက်
+              {t("orders.payment.cancel")}
             </Button>
           }
         />
@@ -208,7 +211,7 @@ export function OrderStatusActions({
             <DialogClose
               render={
                 <Button variant="outline" disabled={isUpdating}>
-                  မလုပ်တော့ပါ
+                  {t("orders.payment.cancel")}
                 </Button>
               }
             />
@@ -219,7 +222,7 @@ export function OrderStatusActions({
               className="gap-2"
             >
               {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />}
-              ပယ်ဖျက်မည်
+              {t("orders.payment.cancel")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -227,3 +230,4 @@ export function OrderStatusActions({
     </div>
   );
 }
+
