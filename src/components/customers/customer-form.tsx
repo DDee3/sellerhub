@@ -23,6 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/components/providers/language-provider";
 
 interface CustomerFormProps {
   initialValues?: CustomerFormValues;
@@ -32,6 +33,7 @@ interface CustomerFormProps {
 export function CustomerForm({ initialValues, customerId }: CustomerFormProps) {
   const router = useRouter();
   const supabase = createClient();
+  const { t } = useLanguage();
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema) as unknown as Resolver<CustomerFormValues>,
@@ -72,7 +74,7 @@ export function CustomerForm({ initialValues, customerId }: CustomerFormProps) {
         } = await supabase.auth.getUser();
 
         if (userError || !user) {
-          throw new Error("အကောင့်ဝင်ရန် လိုအပ်သည်");
+          throw new Error(t("customers.form.error_auth"));
         }
 
         const { data: shop, error: shopError } = await supabase
@@ -82,7 +84,7 @@ export function CustomerForm({ initialValues, customerId }: CustomerFormProps) {
           .maybeSingle();
 
         if (shopError || !shop) {
-          throw new Error("ဆိုင် မတွေ့ပါ");
+          throw new Error(t("customers.form.error_shop"));
         }
 
         const { error } = await supabase.from("customers").insert({
@@ -93,7 +95,7 @@ export function CustomerForm({ initialValues, customerId }: CustomerFormProps) {
         if (error) throw error;
       }
 
-      toast.success("သိမ်းဆည်းပြီးပါပြီ");
+      toast.success(t("customers.form.success"));
       router.push("/customers");
       router.refresh();
     } catch (err: unknown) {
@@ -102,7 +104,7 @@ export function CustomerForm({ initialValues, customerId }: CustomerFormProps) {
           ? err.message
           : typeof err === "object" && err !== null && "message" in err
           ? String((err as { message: unknown }).message)
-          : "အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်";
+          : "An unexpected error occurred while saving customer";
       toast.error(message);
     }
   };
@@ -116,13 +118,13 @@ export function CustomerForm({ initialValues, customerId }: CustomerFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                အမည်
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("customers.form.name")}
               </FormLabel>
               <FormControl>
                 <Input
-                  className="h-12 bg-white border-slate-200 text-base"
-                  placeholder="ဝယ်ယူသူ အမည်"
+                  className="h-12 bg-background text-foreground border-input text-base"
+                  placeholder={t("customers.form.name_placeholder")}
                   {...field}
                 />
               </FormControl>
@@ -137,15 +139,15 @@ export function CustomerForm({ initialValues, customerId }: CustomerFormProps) {
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                ဖုန်းနံပါတ်
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("customers.form.phone")}
               </FormLabel>
               <FormControl>
                 <Input
                   type="tel"
                   inputMode="tel"
-                  className="h-12 bg-white border-slate-200 text-base"
-                  placeholder="09xxxxxxxxx"
+                  className="h-12 bg-background text-foreground border-input text-base"
+                  placeholder={t("customers.form.phone_placeholder")}
                   {...field}
                 />
               </FormControl>
@@ -160,13 +162,13 @@ export function CustomerForm({ initialValues, customerId }: CustomerFormProps) {
           name="facebook_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                Facebook အမည်
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("customers.form.facebook")}
               </FormLabel>
               <FormControl>
                 <Input
-                  className="h-12 bg-white border-slate-200 text-base"
-                  placeholder="Facebook Account အမည်"
+                  className="h-12 bg-background text-foreground border-input text-base"
+                  placeholder={t("customers.form.facebook_placeholder")}
                   value={field.value ?? ""}
                   onChange={field.onChange}
                 />
@@ -182,13 +184,13 @@ export function CustomerForm({ initialValues, customerId }: CustomerFormProps) {
           name="telegram_username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                Telegram Username
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("customers.form.telegram")}
               </FormLabel>
               <FormControl>
                 <Input
-                  className="h-12 bg-white border-slate-200 text-base"
-                  placeholder="@username"
+                  className="h-12 bg-background text-foreground border-input text-base"
+                  placeholder={t("customers.form.telegram_placeholder")}
                   value={field.value ?? ""}
                   onChange={field.onChange}
                 />
@@ -204,14 +206,14 @@ export function CustomerForm({ initialValues, customerId }: CustomerFormProps) {
           name="address"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                လိပ်စာ
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("customers.form.address")}
               </FormLabel>
               <FormControl>
                 <Textarea
                   rows={3}
-                  className="bg-white border-slate-200 text-base resize-none"
-                  placeholder="ပို့ဆောင်ရမည့် လိပ်စာ"
+                  className="bg-background text-foreground border-input text-base resize-none"
+                  placeholder={t("customers.form.address_placeholder")}
                   value={field.value ?? ""}
                   onChange={field.onChange}
                 />
@@ -227,14 +229,14 @@ export function CustomerForm({ initialValues, customerId }: CustomerFormProps) {
           name="note"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-slate-700">
-                မှတ်ချက်
+              <FormLabel className="text-sm font-medium text-foreground">
+                {t("customers.form.note")}
               </FormLabel>
               <FormControl>
                 <Textarea
                   rows={3}
-                  className="bg-white border-slate-200 text-base resize-none"
-                  placeholder="မှတ်ချက် ရေးရန် (ရှိပါက)"
+                  className="bg-background text-foreground border-input text-base resize-none"
+                  placeholder={t("customers.form.note_placeholder")}
                   value={field.value ?? ""}
                   onChange={field.onChange}
                 />
@@ -248,13 +250,12 @@ export function CustomerForm({ initialValues, customerId }: CustomerFormProps) {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-12 text-base font-semibold shadow-xs"
+          className="w-full h-12 text-base font-semibold shadow-soft"
         >
           {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-          သိမ်းဆည်း
+          {isSubmitting ? t("customers.form.saving") : t("customers.form.submit")}
         </Button>
       </form>
     </Form>
   );
 }
-
