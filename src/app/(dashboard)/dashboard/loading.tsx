@@ -1,89 +1,93 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-
 export default function DashboardLoading() {
   return (
     <div className="space-y-6 pb-8 animate-pulse">
-      {/* 1. Header Skeleton */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-200/60 pb-4">
+      {/* 1. Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-4 mb-6">
         <div className="space-y-2">
-          <div className="h-8 w-48 sm:w-64 bg-slate-200 rounded-md" />
-          <div className="h-4 w-36 sm:w-48 bg-slate-100 rounded-md" />
+          <div className="h-7 w-48 bg-muted rounded-lg" />
+          <div className="h-4 w-32 bg-muted/60 rounded-md" />
         </div>
-        <div className="flex items-center gap-2 pt-2 sm:pt-0">
-          <div className="h-10 w-28 bg-slate-200 rounded-lg" />
-          <div className="h-10 w-32 bg-slate-200 rounded-lg" />
+        <div className="flex items-center gap-2.5">
+          <div className="h-9 w-28 bg-muted rounded-full" />
+          <div className="h-9 w-32 bg-muted rounded-full" />
         </div>
       </div>
 
-      {/* 2. Stat Cards Grid Skeleton */}
+      {/* 2. Stat Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[1, 2, 3, 4].map((i) => (
-          <Card key={i} className="bg-white border-slate-200/80 shadow-xs">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <div className="h-4 w-20 bg-slate-200 rounded" />
-              <div className="h-8 w-8 bg-slate-100 rounded-lg" />
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="h-7 w-16 bg-slate-200 rounded" />
-              <div className="h-3 w-24 bg-slate-100 rounded" />
-            </CardContent>
-          </Card>
+        {[...Array(4)].map((_, i) => (
+          <div
+            key={i}
+            className="rounded-2xl border border-border/60 bg-card py-4 px-5 shadow-soft space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="h-3 w-20 bg-muted/70 rounded-md" />
+              <div className="h-7 w-7 rounded-full bg-muted/60" />
+            </div>
+            <div className="space-y-1.5">
+              <div className="h-8 w-16 bg-muted rounded-lg" />
+              <div className="h-3 w-24 bg-muted/50 rounded-md" />
+            </div>
+          </div>
         ))}
       </div>
 
-      {/* 3. Two column grid Skeleton */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Card Skeleton */}
-        <Card className="bg-white border-slate-200/80 shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-100">
-            <div className="space-y-1">
-              <div className="h-5 w-36 bg-slate-200 rounded" />
-              <div className="h-3 w-48 bg-slate-100 rounded" />
+      {/* 2.5 Profit Widget Skeleton */}
+      <div className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-soft space-y-5">
+        <div className="flex items-center justify-between border-b border-border/50 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-xl bg-muted/60" />
+            <div className="space-y-1.5">
+              <div className="h-4 w-32 bg-muted rounded-md" />
+              <div className="h-3 w-40 bg-muted/50 rounded-md" />
             </div>
-            <div className="h-4 w-16 bg-slate-200 rounded" />
-          </CardHeader>
-          <CardContent className="pt-4 space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="py-3 border-b border-slate-100 last:border-0 flex items-center justify-between gap-3"
-              >
-                <div className="space-y-1.5 flex-1">
-                  <div className="h-4 w-40 bg-slate-200 rounded" />
-                  <div className="h-3 w-28 bg-slate-100 rounded" />
-                </div>
-                <div className="h-5 w-16 bg-slate-200 rounded-full" />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-24 bg-muted/60 rounded-full" />
+            <div className="h-6 w-16 bg-muted/60 rounded-full" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div className="md:col-span-2 space-y-2">
+            <div className="h-3 w-28 bg-muted/60 rounded-md" />
+            <div className="h-10 w-44 bg-muted rounded-lg" />
+          </div>
+          <div className="h-16 rounded-xl border border-border/50 bg-muted/30" />
+        </div>
+        <div className="h-28 rounded-xl bg-muted/20" />
+      </div>
 
-        {/* Right Card Skeleton */}
-        <Card className="bg-white border-slate-200/80 shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-100">
-            <div className="space-y-1">
-              <div className="h-5 w-36 bg-slate-200 rounded" />
-              <div className="h-3 w-48 bg-slate-100 rounded" />
-            </div>
-            <div className="h-4 w-16 bg-slate-200 rounded" />
-          </CardHeader>
-          <CardContent className="pt-4 space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="py-3 border-b border-slate-100 last:border-0 flex items-center justify-between gap-3"
-              >
-                <div className="space-y-1.5 flex-1">
-                  <div className="h-4 w-40 bg-slate-200 rounded" />
-                  <div className="h-3 w-28 bg-slate-100 rounded" />
-                </div>
-                <div className="h-5 w-20 bg-slate-200 rounded-full" />
+      {/* 3. Two column grid on lg */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {[...Array(2)].map((_, i) => (
+          <div
+            key={i}
+            className="rounded-2xl border border-border/60 bg-card p-4 shadow-soft space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-border/50 pb-3">
+              <div className="space-y-1">
+                <div className="h-4 w-32 bg-muted rounded-md" />
+                <div className="h-3 w-40 bg-muted/60 rounded-md" />
               </div>
-            ))}
-          </CardContent>
-        </Card>
+              <div className="h-4 w-12 bg-muted/50 rounded-md" />
+            </div>
+            <div className="space-y-2.5">
+              {[...Array(3)].map((_, j) => (
+                <div
+                  key={j}
+                  className="p-2.5 flex items-center justify-between gap-3 rounded-xl bg-muted/20"
+                >
+                  <div className="space-y-1.5 flex-1">
+                    <div className="h-4 w-3/5 bg-muted rounded-md" />
+                    <div className="h-3 w-2/5 bg-muted/50 rounded-md" />
+                  </div>
+                  <div className="h-6 w-16 bg-muted/60 rounded-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
-

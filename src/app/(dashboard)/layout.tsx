@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, ViewTransition } from "react";
 import { AuthGate } from "@/components/dashboard/auth-gate";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 
@@ -14,7 +14,9 @@ export default function DashboardLayout({
       </Suspense>
 
       <Suspense fallback={<div className="min-h-screen bg-background" />}>
-        <DashboardShell>{children}</DashboardShell>
+        <DashboardShell>
+          <ViewTransition>{children}</ViewTransition>
+        </DashboardShell>
       </Suspense>
     </>
   );
