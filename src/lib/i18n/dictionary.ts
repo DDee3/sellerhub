@@ -3,6 +3,7 @@ export const dict = {
     // nav
     nav_dashboard: "Home",
     nav_deals: "Deals",
+    nav_rate_card: "Rate Card",
     nav_products: "Products",
     nav_orders: "Orders",
     nav_shipments: "Shipments",
@@ -369,6 +370,7 @@ export const dict = {
     // nav
     nav_dashboard: "ပင်မစာမျက်နှာ",
     nav_deals: "အရောင်းအဝယ်များ",
+    nav_rate_card: "နှုန်းထားကတ်",
     nav_products: "ပစ္စည်းများ",
     nav_orders: "အော်ဒါများ",
     nav_shipments: "ပို့ဆောင်မှုများ",

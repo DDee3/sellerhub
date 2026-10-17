@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   ArrowLeftRight,
+  ClipboardList,
   Users,
   Settings,
 } from "lucide-react";
@@ -31,6 +32,11 @@ const navItems: NavItem[] = [
     icon: ArrowLeftRight,
   },
   {
+    key: "nav_rate_card",
+    href: "/rates",
+    icon: ClipboardList,
+  },
+  {
     key: "nav_customers",
     href: "/customers",
     icon: Users,
@@ -47,7 +53,7 @@ export function MobileNav() {
   const { t } = useLanguage();
 
   return (
-    <nav className="flex md:hidden fixed bottom-0 left-0 right-0 h-14 border-t border-border bg-background items-center justify-around z-40 select-none">
+    <nav className="flex md:hidden fixed bottom-0 left-0 right-0 h-14 border-t border-border bg-card/95 backdrop-blur-md items-center justify-around z-40 select-none">
       {navItems.map((item) => {
         const isActive =
           pathname === item.href ||
@@ -59,10 +65,10 @@ export function MobileNav() {
             key={item.key}
             href={item.href}
             className={cn(
-              "flex flex-col items-center justify-center flex-1 h-full gap-1 text-[11px] font-medium transition-colors",
+              "flex flex-col items-center justify-center flex-1 h-full gap-1 text-[11px] transition-colors",
               isActive
-                ? "text-primary border-t-2 border-primary"
-                : "text-muted-foreground hover:text-foreground"
+                ? "text-primary font-normal border-t-2 border-primary"
+                : "text-muted-foreground font-light hover:text-foreground"
             )}
           >
             <Icon className="h-4 w-4" />

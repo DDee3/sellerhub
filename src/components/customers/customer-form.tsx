@@ -250,7 +250,7 @@ export function CustomerForm({ initialValues, customerId }: CustomerFormProps) {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-12 text-base font-semibold shadow-soft"
+          className="w-full h-10 text-sm font-normal rounded-full shadow-stripi-1"
         >
           {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           {isSubmitting ? t("customers.form.saving") : t("customers.form.submit")}

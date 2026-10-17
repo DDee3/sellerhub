@@ -70,17 +70,17 @@ async function SettingsContent() {
 
 export default function SettingsPage() {
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-8 max-w-2xl">
       <div>
-        <h1 className="text-xl font-bold tracking-tight text-foreground">Settings</h1>
-        <p className="text-xs text-muted-foreground">
+        <h1 className="text-3xl font-light tracking-[-0.64px] text-foreground">Settings</h1>
+        <p className="text-[15px] font-light text-muted-foreground mt-1">
           Manage your rate display preferences and shop settings
         </p>
       </div>
 
       <Suspense
         fallback={
-          <div className="h-72 rounded-lg border border-border bg-card p-6 animate-pulse" />
+          <div className="h-72 rounded-xl border border-border bg-card p-6 shadow-stripi-1 animate-pulse" />
         }
       >
         <SettingsContent />

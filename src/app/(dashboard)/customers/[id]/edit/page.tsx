@@ -65,26 +65,26 @@ export default async function EditCustomerPage({
           href={`/customers/${id}`}
           className={cn(
             buttonVariants({ variant: "outline", size: "icon" }),
-            "h-10 w-10 border-slate-200 bg-white shadow-xs"
+            "h-9 w-9 rounded-full border-border bg-card text-foreground shadow-stripi-1 hover:bg-muted"
           )}
         >
-          <ArrowLeft className="h-5 w-5 text-slate-600" />
+          <ArrowLeft className="h-4 w-4 text-muted-foreground" />
           <span className="sr-only">နောက်သို့</span>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-light tracking-[-0.64px] text-foreground">
             ဝယ်ယူသူ ပြင်ဆင်
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-[13px] font-light text-muted-foreground mt-0.5">
             ဝယ်ယူသူ အချက်အလက်များကို ပြင်ဆင်ပါ
           </p>
         </div>
       </div>
 
       {/* Form Card */}
-      <Card className="bg-white border-slate-200/80 shadow-xs">
-        <CardHeader className="border-b border-slate-100 pb-4">
-          <CardTitle className="text-base font-semibold text-slate-900">
+      <Card className="bg-card border-border rounded-xl shadow-stripi-1">
+        <CardHeader className="border-b border-border pb-4">
+          <CardTitle className="text-base font-light tracking-[-0.26px] text-foreground">
             ဝယ်ယူသူအချက်အလက်
           </CardTitle>
         </CardHeader>

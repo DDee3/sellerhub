@@ -86,12 +86,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="space-y-5">
-      <div className="space-y-1">
-        <h1 className="text-lg font-semibold tracking-tight text-foreground">
+    <div className="space-y-6">
+      <div className="space-y-1.5">
+        <h1 className="text-2xl font-light tracking-[-0.64px] text-foreground">
           {t("auth.login_title")}
         </h1>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[13px] font-light text-muted-foreground">
           {t("auth.login_subtitle")}
         </p>
       </div>
@@ -103,14 +103,14 @@ export default function LoginPage() {
             form.handleSubmit(onSubmit)(e);
           }}
           noValidate
-          className="space-y-3.5"
+          className="space-y-4"
         >
           <FormField
             control={form.control}
             name="email"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-xs font-medium text-foreground">
+              <FormItem className="space-y-1.5">
+                <FormLabel className="text-[13px] font-normal text-foreground">
                   {t("auth.email")}
                 </FormLabel>
                 <FormControl>
@@ -120,7 +120,7 @@ export default function LoginPage() {
                     placeholder="example@mail.com"
                     autoComplete="email"
                     disabled={isLoading}
-                    className="h-9 text-sm bg-background border-input"
+                    className="h-10 text-[15px] font-light bg-card border-input"
                   />
                 </FormControl>
                 <FormMessage className="text-xs" />
@@ -132,8 +132,8 @@ export default function LoginPage() {
             control={form.control}
             name="password"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-xs font-medium text-foreground">
+              <FormItem className="space-y-1.5">
+                <FormLabel className="text-[13px] font-normal text-foreground">
                   {t("auth.password")}
                 </FormLabel>
                 <FormControl>
@@ -142,7 +142,7 @@ export default function LoginPage() {
                     placeholder="••••••••"
                     autoComplete="current-password"
                     disabled={isLoading}
-                    className="h-9 text-sm bg-background border-input"
+                    className="h-10 text-[15px] font-light bg-card border-input"
                   />
                 </FormControl>
                 <FormMessage className="text-xs" />
@@ -153,7 +153,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-9 text-sm font-medium mt-2"
+            className="w-full h-10 text-sm font-normal rounded-full mt-2"
           >
             {isLoading ? (
               <>
@@ -167,12 +167,12 @@ export default function LoginPage() {
         </form>
       </Form>
 
-      <div className="text-center pt-3 border-t border-border">
-        <p className="text-xs text-muted-foreground">
+      <div className="text-center pt-4 border-t border-border">
+        <p className="text-[13px] font-light text-muted-foreground">
           {t("auth.no_account")}{" "}
           <Link
             href="/signup"
-            className="font-medium text-foreground hover:underline underline-offset-4"
+            className="font-normal text-primary hover:underline underline-offset-4"
           >
             {t("auth.signup_link")}
           </Link>

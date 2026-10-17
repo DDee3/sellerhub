@@ -270,25 +270,25 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
   const sourceRatePlaceholder = isLakhMode ? "e.g. 740" : "e.g. 135.00";
 
   return (
-    <div className="border border-border bg-card p-6 rounded-lg max-w-xl">
+    <div className="border border-border bg-card p-8 rounded-xl shadow-stripi-1 max-w-xl">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Direction Toggle */}
           <FormField
             control={form.control}
             name="direction"
             render={({ field }) => (
-              <FormItem className="space-y-1.5">
-                <FormLabel className="text-xs font-medium text-foreground">Direction</FormLabel>
-                <div className="grid grid-cols-2 gap-2">
+              <FormItem className="space-y-2">
+                <FormLabel className="text-[13px] font-normal text-foreground">Direction</FormLabel>
+                <div className="grid grid-cols-2 gap-2 p-1 rounded-full bg-canvas-soft border border-border">
                   <button
                     type="button"
                     onClick={() => field.onChange("mmk_to_thb")}
                     className={cn(
-                      "h-9 px-3 text-xs font-semibold rounded-md border transition-colors flex items-center justify-center gap-1.5",
+                      "h-9 px-4 text-xs font-normal rounded-full transition-all flex items-center justify-center gap-1.5",
                       field.value === "mmk_to_thb"
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background text-muted-foreground border-input hover:bg-muted/60"
+                        ? "bg-primary text-white shadow-stripi-1"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <span>MMK → THB</span>
@@ -297,10 +297,10 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
                     type="button"
                     onClick={() => field.onChange("thb_to_mmk")}
                     className={cn(
-                      "h-9 px-3 text-xs font-semibold rounded-md border transition-colors flex items-center justify-center gap-1.5",
+                      "h-9 px-4 text-xs font-normal rounded-full transition-all flex items-center justify-center gap-1.5",
                       field.value === "thb_to_mmk"
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background text-muted-foreground border-input hover:bg-muted/60"
+                        ? "bg-primary text-white shadow-stripi-1"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <span>THB → MMK</span>
@@ -317,7 +317,7 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
             name="amount_in"
             render={({ field }) => (
               <FormItem className="space-y-1.5">
-                <FormLabel className="text-xs font-medium text-foreground">
+                <FormLabel className="text-[13px] font-normal text-foreground">
                   Amount in ({inCurrency})
                 </FormLabel>
                 <FormControl>
@@ -327,7 +327,7 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
                     step="any"
                     placeholder={`e.g. ${direction === "mmk_to_thb" ? "100000" : "1000"}`}
                     disabled={isSubmitting}
-                    className="h-9 text-sm bg-background border-input"
+                    className="h-10 text-[15px] font-light bg-card border-input tabular-nums"
                   />
                 </FormControl>
                 <FormMessage className="text-xs" />
@@ -341,7 +341,7 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
             name="customer_rate"
             render={({ field }) => (
               <FormItem className="space-y-1.5">
-                <FormLabel className="text-xs font-medium text-foreground">
+                <FormLabel className="text-[13px] font-normal text-foreground">
                   {customerRateLabel}
                 </FormLabel>
                 <FormControl>
@@ -351,7 +351,7 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
                     step="any"
                     placeholder={customerRatePlaceholder}
                     disabled={isSubmitting}
-                    className="h-9 text-sm bg-background border-input"
+                    className="h-10 text-[15px] font-light bg-card border-input tabular-nums"
                   />
                 </FormControl>
                 <FormMessage className="text-xs" />
@@ -365,7 +365,7 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
             name="source_rate"
             render={({ field }) => (
               <FormItem className="space-y-1.5">
-                <FormLabel className="text-xs font-medium text-foreground">
+                <FormLabel className="text-[13px] font-normal text-foreground">
                   {sourceRateLabel}
                 </FormLabel>
                 <FormControl>
@@ -376,10 +376,10 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
                     step="any"
                     placeholder={sourceRatePlaceholder}
                     disabled={isSubmitting}
-                    className="h-9 text-sm bg-background border-input"
+                    className="h-10 text-[15px] font-light bg-card border-input tabular-nums"
                   />
                 </FormControl>
-                <FormDescription className="text-[11px] text-muted-foreground">
+                <FormDescription className="text-[12px] font-light text-muted-foreground">
                   Leave blank if using own float
                 </FormDescription>
                 <FormMessage className="text-xs" />
@@ -388,10 +388,10 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
           />
 
           {/* Live Calculation Box */}
-          <div className="rounded-md border border-border bg-muted/40 p-3 space-y-2 text-xs">
+          <div className="rounded-xl border border-border bg-canvas-soft p-4 space-y-3 text-[13px]">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Amount out ({outCurrency}):</span>
-              <span className="font-semibold text-foreground tabular-nums text-sm">
+              <span className="text-muted-foreground font-light">Amount out ({outCurrency}):</span>
+              <span className="font-light text-foreground tabular-nums text-base tracking-[-0.42px]">
                 {amountOut !== null && !isNaN(amountOut)
                   ? `${amountOut.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
@@ -400,15 +400,15 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
                   : "—"}
               </span>
             </div>
-            <div className="flex items-center justify-between pt-1 border-t border-border/60">
-              <span className="text-muted-foreground">Estimated profit (MMK):</span>
+            <div className="flex items-center justify-between pt-2 border-t border-border">
+              <span className="text-muted-foreground font-light">Estimated profit (MMK):</span>
               <span
                 className={cn(
-                  "font-semibold tabular-nums text-sm",
+                  "font-light tabular-nums text-base tracking-[-0.42px]",
                   profitMmk !== null && !isNaN(profitMmk)
                     ? profitMmk >= 0
                       ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-rose-600 dark:text-rose-400"
+                      : "text-[#ea2261]"
                     : "text-muted-foreground"
                 )}
               >
@@ -428,14 +428,14 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
             name="note"
             render={({ field }) => (
               <FormItem className="space-y-1.5">
-                <FormLabel className="text-xs font-medium text-foreground">Note (optional)</FormLabel>
+                <FormLabel className="text-[13px] font-normal text-foreground">Note (optional)</FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
                     placeholder="Reference, customer tag, or notes..."
                     rows={2}
                     disabled={isSubmitting}
-                    className="text-sm bg-background border-input resize-none"
+                    className="text-[15px] font-light bg-card border-input resize-none"
                   />
                 </FormControl>
                 <FormMessage className="text-xs" />
@@ -447,7 +447,7 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-9 text-sm font-medium"
+            className="w-full h-10 text-sm font-normal rounded-full"
           >
             {isSubmitting ? (
               <>

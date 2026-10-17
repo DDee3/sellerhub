@@ -52,7 +52,7 @@ export function CustomerFilters() {
           value={search}
           onChange={handleSearchChange}
           placeholder={t("customers.search_placeholder")}
-          className="h-10 pl-9 text-sm bg-card border-border rounded-xl"
+          className="h-10 pl-9 text-[15px] font-light bg-card border-input rounded-[6px]"
         />
       </div>
     </div>

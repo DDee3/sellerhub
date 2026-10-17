@@ -41,15 +41,15 @@ export default function NewDealPage() {
   return (
     <div className="space-y-6 max-w-xl">
       {/* Back link & Title */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Link
           href="/deals"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm font-light text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
+          <ArrowLeft className="h-4 w-4" />
           <span>Back to Deals</span>
         </Link>
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+        <h1 className="text-3xl font-light tracking-[-0.64px] text-foreground">
           Record a Deal
         </h1>
       </div>
@@ -57,7 +57,7 @@ export default function NewDealPage() {
       {/* Form Container wrapped in Suspense */}
       <Suspense
         fallback={
-          <div className="h-96 rounded-lg border border-border bg-card p-6 animate-pulse" />
+          <div className="h-96 rounded-xl border border-border bg-card p-6 shadow-stripi-1 animate-pulse" />
         }
       >
         <DealFormLoader />

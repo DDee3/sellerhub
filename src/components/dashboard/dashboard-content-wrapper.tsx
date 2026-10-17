@@ -10,7 +10,7 @@ export function DashboardContentWrapper({
   const { language } = useLanguage();
 
   return (
-    <main key={language} className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full flex-1">
+    <main key={language} className="p-4 md:p-6 max-w-7xl mx-auto w-full flex-1">
       {children}
     </main>
   );

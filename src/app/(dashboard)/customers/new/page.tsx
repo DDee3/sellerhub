@@ -20,26 +20,26 @@ export default function NewCustomerPage() {
           href="/customers"
           className={cn(
             buttonVariants({ variant: "outline", size: "icon" }),
-            "h-10 w-10 border-border bg-card text-foreground shadow-soft hover:bg-muted"
+            "h-9 w-9 rounded-full border-border bg-card text-foreground shadow-stripi-1 hover:bg-muted"
           )}
         >
-          <ArrowLeft className="h-5 w-5 text-muted-foreground" />
+          <ArrowLeft className="h-4 w-4 text-muted-foreground" />
           <span className="sr-only">{t("customers.form.back")}</span>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-3xl font-light tracking-[-0.64px] text-foreground">
             {t("customers.new.title")}
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-[13px] font-light text-muted-foreground mt-0.5">
             {t("customers.new.subtitle")}
           </p>
         </div>
       </div>
 
       {/* Form Card */}
-      <Card className="bg-card text-card-foreground border-border shadow-soft">
-        <CardHeader className="border-b border-border/60 pb-4">
-          <CardTitle className="text-base font-semibold text-foreground">
+      <Card className="bg-card text-card-foreground border-border rounded-xl shadow-stripi-1">
+        <CardHeader className="border-b border-border pb-4">
+          <CardTitle className="text-base font-light tracking-[-0.26px] text-foreground">
             {t("customers.form.card_title")}
           </CardTitle>
         </CardHeader>

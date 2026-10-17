@@ -125,6 +125,56 @@ export async function getDeals(shopId?: string): Promise<DealListItem[]> {
   return data as DealListItem[];
 }
 
+export async function getRecentDeals(
+  limit: number = 5,
+  shopId?: string
+): Promise<DealListItem[]> {
+  await connection();
+  const supabase = await createClient();
+
+  let targetShopId = shopId;
+
+  if (!targetShopId) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return [];
+    }
+
+    const { data: shop } = await supabase
+      .from("shops")
+      .select("id")
+      .eq("owner_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!shop) {
+      return [];
+    }
+
+    targetShopId = shop.id;
+  }
+
+  const { data, error } = await supabase
+    .from("deals")
+    .select(
+      "id, shop_id, direction, amount_in, customer_rate, source_rate, amount_out, profit_mmk, note, created_at"
+    )
+    .eq("shop_id", targetShopId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error || !data) {
+    console.error("Error fetching recent deals:", error);
+    return [];
+  }
+
+  return data as DealListItem[];
+}
+
 export async function getShopRateDisplayMode(
   shopId?: string
 ): Promise<RateDisplayMode> {
