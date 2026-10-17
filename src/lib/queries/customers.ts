@@ -13,23 +13,6 @@ export type CustomerRow = {
   outstanding_balance: number;
 };
 
-interface RawCustomerOrder {
-  id: string;
-  total_price: number;
-  balance_due: number;
-  status: string;
-}
-
-interface RawCustomerQueryRow {
-  id: string;
-  name: string;
-  phone: string | null;
-  facebook_name: string | null;
-  telegram_username: string | null;
-  address: string | null;
-  orders: RawCustomerOrder[] | null;
-}
-
 export async function getCustomers(opts: {
   search?: string;
 }): Promise<CustomerRow[]> {

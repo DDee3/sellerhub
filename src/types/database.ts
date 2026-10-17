@@ -13,6 +13,7 @@ export type PaymentMethod = 'kbz_pay' | 'wave_pay' | 'cash' | 'cod'
 export type OrderStatus = 'pending' | 'confirmed' | 'paid' | 'packed' | 'shipped' | 'delivered' | 'cancelled'
 export type StockChangeReason = 'import' | 'sale' | 'adjustment' | 'damaged' | 'returned'
 export type DealDirection = 'mmk_to_thb' | 'thb_to_mmk'
+export type RateDisplayMode = 'mmk_per_thb' | 'thb_per_lakh'
 
 export interface Database {
   public: {
@@ -22,6 +23,7 @@ export interface Database {
           id: string
           owner_id: string
           name: string
+          rate_display_mode: RateDisplayMode | null
           phone: string | null
           facebook_url: string | null
           telegram_username: string | null
@@ -33,6 +35,7 @@ export interface Database {
           id?: string
           owner_id: string
           name: string
+          rate_display_mode?: RateDisplayMode | null
           phone?: string | null
           facebook_url?: string | null
           telegram_username?: string | null
@@ -44,6 +47,7 @@ export interface Database {
           id?: string
           owner_id?: string
           name?: string
+          rate_display_mode?: RateDisplayMode | null
           phone?: string | null
           facebook_url?: string | null
           telegram_username?: string | null

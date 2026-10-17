@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
 import { useLanguage } from "@/components/providers/language-provider";
 
-export interface ClientDateProps {
-  /** Optional date to format; defaults to current date if not provided */
-  date?: Date | string | number;
-  /** date-fns format string, defaults to "PPP" */
+const emptySubscribe = () => () => {};
+
+interface ClientDateProps {
+  date?: string | Date;
   formatStr?: string;
-  /** Optional additional CSS classes */
   className?: string;
 }
 
@@ -54,31 +53,27 @@ export function ClientDate({
   className,
 }: ClientDateProps) {
   const { language } = useLanguage();
-  const [formatted, setFormatted] = useState<string>("");
-  const [mounted, setMounted] = useState<boolean>(false);
-
-  useEffect(() => {
-    try {
-      const targetDate = date !== undefined ? new Date(date) : new Date();
-      if (isNaN(targetDate.getTime())) {
-        setFormatted("");
-      } else if (language === "my" && (formatStr === "PPP" || formatStr === "full")) {
-        setFormatted(formatMyanmarDate(targetDate));
-      } else {
-        setFormatted(format(targetDate, formatStr, { locale: enUS }));
-      }
-    } catch {
-      setFormatted("");
-    }
-    setMounted(true);
-  }, [date, formatStr, language]);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   if (!mounted) {
     return <span className={className} />;
+  }
+
+  let formatted = "";
+  try {
+    const targetDate = date !== undefined ? new Date(date) : new Date();
+    if (!isNaN(targetDate.getTime())) {
+      if (language === "my" && (formatStr === "PPP" || formatStr === "full")) {
+        formatted = formatMyanmarDate(targetDate);
+      } else {
+        formatted = format(targetDate, formatStr, { locale: enUS });
+      }
+    }
+  } catch {
+    formatted = "";
   }
 
   return <span className={className}>{formatted}</span>;
 }
 
 export default ClientDate;
-

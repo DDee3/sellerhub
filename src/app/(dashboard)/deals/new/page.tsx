@@ -1,12 +1,38 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { connection } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { DealForm } from "@/components/deals/deal-form";
+import type { RateDisplayMode } from "@/types/database";
 
 export const metadata = {
   title: "Record a Deal | exchange",
 };
 
-export default function NewDealPage() {
+export default async function NewDealPage() {
+  await connection();
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let rateDisplayMode: RateDisplayMode = "mmk_per_thb";
+
+  if (user) {
+    const { data: shop } = await supabase
+      .from("shops")
+      .select("rate_display_mode")
+      .eq("owner_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (shop?.rate_display_mode) {
+      rateDisplayMode = shop.rate_display_mode;
+    }
+  }
+
   return (
     <div className="space-y-6 max-w-xl">
       {/* Back link & Title */}
@@ -24,8 +50,7 @@ export default function NewDealPage() {
       </div>
 
       {/* Form Container */}
-      <DealForm />
+      <DealForm initialRateDisplayMode={rateDisplayMode} />
     </div>
   );
 }
-

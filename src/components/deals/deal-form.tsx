@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,10 +22,60 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
+import type { RateDisplayMode } from "@/types/database";
 
-export function DealForm() {
+interface DealFormProps {
+  initialRateDisplayMode?: RateDisplayMode;
+}
+
+function toStandardRate(
+  rawRate: number | null | undefined,
+  mode: RateDisplayMode
+): number | null {
+  if (rawRate === null || rawRate === undefined || isNaN(rawRate) || rawRate <= 0) {
+    return null;
+  }
+  if (mode === "thb_per_lakh") {
+    return 100000 / rawRate;
+  }
+  return rawRate;
+}
+
+export function DealForm({ initialRateDisplayMode }: DealFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rateDisplayMode, setRateDisplayMode] = useState<RateDisplayMode>(
+    initialRateDisplayMode || "mmk_per_thb"
+  );
+
+  useEffect(() => {
+    if (initialRateDisplayMode) {
+      setRateDisplayMode(initialRateDisplayMode);
+      return;
+    }
+
+    async function loadShopSetting() {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: shop } = await supabase
+        .from("shops")
+        .select("rate_display_mode")
+        .eq("owner_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (shop?.rate_display_mode) {
+        setRateDisplayMode(shop.rate_display_mode as RateDisplayMode);
+      }
+    }
+
+    loadShopSetting();
+  }, [initialRateDisplayMode]);
 
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealSchema) as unknown as Resolver<DealFormValues>,
@@ -36,7 +86,8 @@ export function DealForm() {
       source_rate: "" as unknown as number,
       note: "",
     },
-    mode: "onChange",
+    mode: "onSubmit",
+    reValidateMode: "onChange",
   });
 
   const direction = form.watch("direction");
@@ -45,28 +96,32 @@ export function DealForm() {
   const sourceRateRaw = form.watch("source_rate");
 
   const amountIn = Number(amountInRaw);
-  const customerRate = Number(customerRateRaw);
-  const sourceRate =
+  const rawCustomerRate = Number(customerRateRaw);
+  const rawSourceRate =
     sourceRateRaw !== "" && sourceRateRaw !== null && sourceRateRaw !== undefined
       ? Number(sourceRateRaw)
       : null;
 
-  // Live calculations
+  // Convert to standard MMK per 1 THB based on shop mode
+  const standardCustomerRate = toStandardRate(rawCustomerRate, rateDisplayMode);
+  const standardSourceRate = toStandardRate(rawSourceRate, rateDisplayMode);
+
+  // Live calculations using converted standard rate
   let amountOut: number | null = null;
   let profitMmk: number | null = null;
 
-  if (amountIn > 0 && customerRate > 0) {
+  if (amountIn > 0 && standardCustomerRate !== null && standardCustomerRate > 0) {
     if (direction === "mmk_to_thb") {
-      amountOut = amountIn / customerRate;
+      amountOut = amountIn / standardCustomerRate;
     } else {
-      amountOut = amountIn * customerRate;
+      amountOut = amountIn * standardCustomerRate;
     }
 
-    if (sourceRate !== null && !isNaN(sourceRate) && sourceRate > 0) {
+    if (standardSourceRate !== null && standardSourceRate > 0) {
       if (direction === "mmk_to_thb") {
-        profitMmk = amountIn - amountOut * sourceRate;
+        profitMmk = amountIn - amountOut * standardSourceRate;
       } else {
-        profitMmk = amountIn * sourceRate - amountOut;
+        profitMmk = amountIn * standardSourceRate - amountOut;
       }
     }
   }
@@ -89,7 +144,7 @@ export function DealForm() {
       // Fetch current user's shop_id
       const { data: shop, error: shopError } = await supabase
         .from("shops")
-        .select("id")
+        .select("id, rate_display_mode")
         .eq("owner_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -100,10 +155,12 @@ export function DealForm() {
         return;
       }
 
-      // Compute final values
+      const activeMode: RateDisplayMode =
+        (shop.rate_display_mode as RateDisplayMode) || rateDisplayMode || "mmk_per_thb";
+
       const finalAmountIn = Number(values.amount_in);
-      const finalCustomerRate = Number(values.customer_rate);
-      const validSourceRate =
+      const rawFinalCustomerRate = Number(values.customer_rate);
+      const rawFinalSourceRate =
         values.source_rate !== "" &&
         values.source_rate !== null &&
         values.source_rate !== undefined &&
@@ -111,20 +168,29 @@ export function DealForm() {
           ? Number(values.source_rate)
           : null;
 
+      // Always convert to standard "MMK per 1 THB" before persisting
+      const finalStandardCustomerRate = toStandardRate(rawFinalCustomerRate, activeMode);
+      if (!finalStandardCustomerRate || finalStandardCustomerRate <= 0) {
+        toast.error("Invalid customer rate");
+        return;
+      }
+
+      const finalStandardSourceRate = toStandardRate(rawFinalSourceRate, activeMode);
+
       let finalAmountOut = 0;
       if (values.direction === "mmk_to_thb") {
-        finalAmountOut = finalAmountIn / finalCustomerRate;
+        finalAmountOut = finalAmountIn / finalStandardCustomerRate;
       } else {
-        finalAmountOut = finalAmountIn * finalCustomerRate;
+        finalAmountOut = finalAmountIn * finalStandardCustomerRate;
       }
       finalAmountOut = Number(finalAmountOut.toFixed(2));
 
       let finalProfitMmk: number | null = null;
-      if (validSourceRate !== null) {
+      if (finalStandardSourceRate !== null) {
         if (values.direction === "mmk_to_thb") {
-          finalProfitMmk = finalAmountIn - finalAmountOut * validSourceRate;
+          finalProfitMmk = finalAmountIn - finalAmountOut * finalStandardSourceRate;
         } else {
-          finalProfitMmk = finalAmountIn * validSourceRate - finalAmountOut;
+          finalProfitMmk = finalAmountIn * finalStandardSourceRate - finalAmountOut;
         }
         finalProfitMmk = Number(finalProfitMmk.toFixed(2));
       }
@@ -133,8 +199,11 @@ export function DealForm() {
         shop_id: shop.id,
         direction: values.direction,
         amount_in: finalAmountIn,
-        customer_rate: finalCustomerRate,
-        source_rate: validSourceRate,
+        customer_rate: Number(finalStandardCustomerRate.toFixed(6)),
+        source_rate:
+          finalStandardSourceRate !== null
+            ? Number(finalStandardSourceRate.toFixed(6))
+            : null,
         amount_out: finalAmountOut,
         profit_mmk: finalProfitMmk,
         note: values.note?.trim() || null,
@@ -159,6 +228,17 @@ export function DealForm() {
 
   const inCurrency = direction === "mmk_to_thb" ? "MMK" : "THB";
   const outCurrency = direction === "mmk_to_thb" ? "THB" : "MMK";
+
+  // Dynamic labels based on rate_display_mode
+  const isLakhMode = rateDisplayMode === "thb_per_lakh";
+  const customerRateLabel = isLakhMode
+    ? "Customer rate (1 Lakh MMK = [X] THB)"
+    : "Customer rate (1 THB = [X] MMK)";
+  const sourceRateLabel = isLakhMode
+    ? "Source rate (1 Lakh MMK = [X] THB, optional)"
+    : "Source rate (1 THB = [X] MMK, optional)";
+  const customerRatePlaceholder = isLakhMode ? "e.g. 728" : "e.g. 137.50";
+  const sourceRatePlaceholder = isLakhMode ? "e.g. 740" : "e.g. 135.00";
 
   return (
     <div className="border border-border bg-card p-6 rounded-lg max-w-xl">
@@ -233,14 +313,14 @@ export function DealForm() {
             render={({ field }) => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-xs font-medium text-foreground">
-                  Customer rate (MMK per 1 THB)
+                  {customerRateLabel}
                 </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     type="number"
                     step="any"
-                    placeholder="e.g. 125.50"
+                    placeholder={customerRatePlaceholder}
                     disabled={isSubmitting}
                     className="h-9 text-sm bg-background border-input"
                   />
@@ -257,7 +337,7 @@ export function DealForm() {
             render={({ field }) => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-xs font-medium text-foreground">
-                  Source rate (optional)
+                  {sourceRateLabel}
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -265,7 +345,7 @@ export function DealForm() {
                     value={field.value ?? ""}
                     type="number"
                     step="any"
-                    placeholder="e.g. 124.00"
+                    placeholder={sourceRatePlaceholder}
                     disabled={isSubmitting}
                     className="h-9 text-sm bg-background border-input"
                   />

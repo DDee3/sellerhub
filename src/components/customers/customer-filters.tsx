@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -14,11 +14,13 @@ export function CustomerFilters() {
 
   const currentQ = searchParams.get("q") ?? "";
   const [search, setSearch] = useState(currentQ);
+  const [prevQ, setPrevQ] = useState(currentQ);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
+  if (prevQ !== currentQ) {
+    setPrevQ(currentQ);
     setSearch(currentQ);
-  }, [currentQ]);
+  }
 
   const updateParams = useCallback(
     (q: string) => {

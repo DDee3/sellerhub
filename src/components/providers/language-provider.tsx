@@ -3,10 +3,9 @@
 import {
   createContext,
   useContext,
-  useEffect,
-  useState,
   useCallback,
   useMemo,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { dictionary, type Language, type DictKey } from "@/lib/i18n/dictionary";
@@ -26,35 +25,56 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined
 );
 
-const STORAGE_KEY = "sellerhub-lang";
+const STORAGE_KEY = "exchange-lang";
+
+let memoryLang: Language = "en";
+
+function getLanguageSnapshot(): Language {
+  if (typeof window === "undefined") return "en";
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY) as Language | null;
+    if (saved === "en" || saved === "my") {
+      memoryLang = saved;
+      return saved;
+    }
+  } catch {
+    // localStorage may be restricted
+  }
+  return memoryLang;
+}
+
+const listeners = new Set<() => void>();
+
+function subscribe(callback: () => void) {
+  listeners.add(callback);
+  if (typeof window !== "undefined") {
+    window.addEventListener("storage", callback);
+  }
+  return () => {
+    listeners.delete(callback);
+    if (typeof window !== "undefined") {
+      window.removeEventListener("storage", callback);
+    }
+  };
+}
+
+function notify() {
+  listeners.forEach((listener) => listener());
+}
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("en");
-  const [mounted, setMounted] = useState(false);
+  const language = useSyncExternalStore<Language>(subscribe, getLanguageSnapshot, () => "en");
+  const mounted = useSyncExternalStore(subscribe, () => true, () => false);
 
-  // Read saved language from localStorage on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY) as Language | null;
-      if (saved === "en" || saved === "my") {
-        setLanguageState(saved);
-        document.documentElement.lang = saved;
-      }
-    } catch {
-      // localStorage may be unavailable
-    }
-    setMounted(true);
-  }, []);
-
-  // Update state, localStorage, and html lang immediately
   const setLanguage = useCallback((newLang: Language) => {
-    setLanguageState(newLang);
+    memoryLang = newLang;
     try {
       localStorage.setItem(STORAGE_KEY, newLang);
       document.documentElement.lang = newLang;
     } catch {
       // localStorage may be unavailable
     }
+    notify();
   }, []);
 
   const t = useCallback(

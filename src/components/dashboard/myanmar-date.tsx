@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
 import { useLanguage } from "@/components/providers/language-provider";
+
+const emptySubscribe = () => () => {};
 
 const myanmarMonths = [
   "ဇန်နဝါရီ",
@@ -41,20 +43,17 @@ function formatMyanmarDate(date: Date): string {
 
 export function MyanmarDate({ date }: { date?: string | Date } = {}) {
   const { language } = useLanguage();
-  const [dateStr, setDateStr] = useState<string>("");
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
-  useEffect(() => {
-    const d = date ? new Date(date) : new Date();
-    if (language === "en") {
-      setDateStr(format(d, "MMMM d, yyyy", { locale: enUS }));
-    } else {
-      setDateStr(formatMyanmarDate(d));
-    }
-  }, [date, language]);
-
-  if (!dateStr) {
+  if (!mounted) {
     return <span className="inline-block h-4 w-32 bg-muted/60 rounded animate-pulse" />;
   }
+
+  const d = date ? new Date(date) : new Date();
+  const dateStr =
+    language === "en"
+      ? format(d, "MMMM d, yyyy", { locale: enUS })
+      : formatMyanmarDate(d);
 
   return <span>{dateStr}</span>;
 }
