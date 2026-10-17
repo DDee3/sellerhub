@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -28,38 +28,29 @@ interface DealFormProps {
   initialRateDisplayMode?: RateDisplayMode;
 }
 
-function toStandardRate(
-  rawRate: number | null | undefined,
-  mode: RateDisplayMode
-): number | null {
-  if (rawRate === null || rawRate === undefined || isNaN(rawRate) || rawRate <= 0) {
-    return null;
-  }
-  if (mode === "thb_per_lakh") {
-    return 100000 / rawRate;
-  }
-  return rawRate;
-}
-
 export function DealForm({ initialRateDisplayMode }: DealFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rateDisplayMode, setRateDisplayMode] = useState<RateDisplayMode>(
     initialRateDisplayMode || "mmk_per_thb"
   );
+  const [prevInitialMode, setPrevInitialMode] = useState(initialRateDisplayMode);
+
+  if (prevInitialMode !== initialRateDisplayMode) {
+    setPrevInitialMode(initialRateDisplayMode);
+    setRateDisplayMode(initialRateDisplayMode || "mmk_per_thb");
+  }
 
   useEffect(() => {
-    if (initialRateDisplayMode) {
-      setRateDisplayMode(initialRateDisplayMode);
-      return;
-    }
+    if (initialRateDisplayMode) return;
 
+    let isMounted = true;
     async function loadShopSetting() {
       const supabase = createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user || !isMounted) return;
 
       const { data: shop } = await supabase
         .from("shops")
@@ -69,12 +60,15 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
         .limit(1)
         .maybeSingle();
 
-      if (shop?.rate_display_mode) {
+      if (shop?.rate_display_mode && isMounted) {
         setRateDisplayMode(shop.rate_display_mode as RateDisplayMode);
       }
     }
 
     loadShopSetting();
+    return () => {
+      isMounted = false;
+    };
   }, [initialRateDisplayMode]);
 
   const form = useForm<DealFormValues>({
@@ -90,10 +84,10 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
     reValidateMode: "onChange",
   });
 
-  const direction = form.watch("direction");
-  const amountInRaw = form.watch("amount_in");
-  const customerRateRaw = form.watch("customer_rate");
-  const sourceRateRaw = form.watch("source_rate");
+  const direction = useWatch({ control: form.control, name: "direction" });
+  const amountInRaw = useWatch({ control: form.control, name: "amount_in" });
+  const customerRateRaw = useWatch({ control: form.control, name: "customer_rate" });
+  const sourceRateRaw = useWatch({ control: form.control, name: "source_rate" });
 
   const amountIn = Number(amountInRaw);
   const rawCustomerRate = Number(customerRateRaw);
@@ -102,26 +96,39 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
       ? Number(sourceRateRaw)
       : null;
 
-  // Convert to standard MMK per 1 THB based on shop mode
-  const standardCustomerRate = toStandardRate(rawCustomerRate, rateDisplayMode);
-  const standardSourceRate = toStandardRate(rawSourceRate, rateDisplayMode);
+  // Real rates: convert Lakh rates to per-THB rate before calculating amount_out and profit
+  let real_customer_rate: number | null = null;
+  if (rawCustomerRate > 0) {
+    real_customer_rate =
+      rateDisplayMode === "thb_per_lakh"
+        ? 100000 / rawCustomerRate
+        : rawCustomerRate;
+  }
 
-  // Live calculations using converted standard rate
+  let real_source_rate: number | null = null;
+  if (rawSourceRate !== null && rawSourceRate > 0) {
+    real_source_rate =
+      rateDisplayMode === "thb_per_lakh"
+        ? 100000 / rawSourceRate
+        : rawSourceRate;
+  }
+
+  // Live calculations using the real converted rates
   let amountOut: number | null = null;
   let profitMmk: number | null = null;
 
-  if (amountIn > 0 && standardCustomerRate !== null && standardCustomerRate > 0) {
+  if (amountIn > 0 && real_customer_rate !== null && real_customer_rate > 0) {
     if (direction === "mmk_to_thb") {
-      amountOut = amountIn / standardCustomerRate;
+      amountOut = amountIn / real_customer_rate;
     } else {
-      amountOut = amountIn * standardCustomerRate;
+      amountOut = amountIn * real_customer_rate;
     }
 
-    if (standardSourceRate !== null && standardSourceRate > 0) {
+    if (real_source_rate !== null && real_source_rate > 0) {
       if (direction === "mmk_to_thb") {
-        profitMmk = amountIn - amountOut * standardSourceRate;
+        profitMmk = amountIn - amountOut * real_source_rate;
       } else {
-        profitMmk = amountIn * standardSourceRate - amountOut;
+        profitMmk = amountIn * real_source_rate - amountOut;
       }
     }
   }
@@ -141,18 +148,31 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
         return;
       }
 
-      // Fetch current user's shop_id
-      const { data: shop, error: shopError } = await supabase
+      // Fetch or create user's shop to guarantee a valid shop_id
+      let { data: shop } = await supabase
         .from("shops")
         .select("id, rate_display_mode")
         .eq("owner_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (shopError || !shop) {
-        toast.error("Could not find a shop for this user. Please set up a shop first.");
-        return;
+      if (!shop) {
+        const { data: newShop, error: createShopError } = await supabase
+          .from("shops")
+          .insert({
+            owner_id: user.id,
+            name: "My Store",
+            rate_display_mode: "mmk_per_thb",
+          })
+          .select("id, rate_display_mode")
+          .single();
+
+        if (createShopError || !newShop) {
+          toast.error("Could not find or create a shop for your account.");
+          return;
+        }
+        shop = newShop;
       }
 
       const activeMode: RateDisplayMode =
@@ -168,29 +188,38 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
           ? Number(values.source_rate)
           : null;
 
-      // Always convert to standard "MMK per 1 THB" before persisting
-      const finalStandardCustomerRate = toStandardRate(rawFinalCustomerRate, activeMode);
-      if (!finalStandardCustomerRate || finalStandardCustomerRate <= 0) {
+      // Convert to real per-THB rates
+      const final_real_customer_rate =
+        activeMode === "thb_per_lakh"
+          ? 100000 / rawFinalCustomerRate
+          : rawFinalCustomerRate;
+
+      if (!final_real_customer_rate || final_real_customer_rate <= 0) {
         toast.error("Invalid customer rate");
         return;
       }
 
-      const finalStandardSourceRate = toStandardRate(rawFinalSourceRate, activeMode);
+      const final_real_source_rate =
+        rawFinalSourceRate !== null
+          ? activeMode === "thb_per_lakh"
+            ? 100000 / rawFinalSourceRate
+            : rawFinalSourceRate
+          : null;
 
       let finalAmountOut = 0;
       if (values.direction === "mmk_to_thb") {
-        finalAmountOut = finalAmountIn / finalStandardCustomerRate;
+        finalAmountOut = finalAmountIn / final_real_customer_rate;
       } else {
-        finalAmountOut = finalAmountIn * finalStandardCustomerRate;
+        finalAmountOut = finalAmountIn * final_real_customer_rate;
       }
       finalAmountOut = Number(finalAmountOut.toFixed(2));
 
       let finalProfitMmk: number | null = null;
-      if (finalStandardSourceRate !== null) {
+      if (final_real_source_rate !== null) {
         if (values.direction === "mmk_to_thb") {
-          finalProfitMmk = finalAmountIn - finalAmountOut * finalStandardSourceRate;
+          finalProfitMmk = finalAmountIn - finalAmountOut * final_real_source_rate;
         } else {
-          finalProfitMmk = finalAmountIn * finalStandardSourceRate - finalAmountOut;
+          finalProfitMmk = finalAmountIn * final_real_source_rate - finalAmountOut;
         }
         finalProfitMmk = Number(finalProfitMmk.toFixed(2));
       }
@@ -199,10 +228,10 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
         shop_id: shop.id,
         direction: values.direction,
         amount_in: finalAmountIn,
-        customer_rate: Number(finalStandardCustomerRate.toFixed(6)),
+        customer_rate: Number(final_real_customer_rate.toFixed(6)),
         source_rate:
-          finalStandardSourceRate !== null
-            ? Number(finalStandardSourceRate.toFixed(6))
+          final_real_source_rate !== null
+            ? Number(final_real_source_rate.toFixed(6))
             : null,
         amount_out: finalAmountOut,
         profit_mmk: finalProfitMmk,

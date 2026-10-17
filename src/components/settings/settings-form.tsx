@@ -42,6 +42,11 @@ const themeLabels: Record<string, string> = {
   system: "System",
 };
 
+const rateDisplayModeLabels: Record<RateDisplayMode, string> = {
+  mmk_per_thb: "1 THB = X MMK",
+  thb_per_lakh: "1 Lakh MMK = X THB",
+};
+
 export function SettingsForm({ initialShop }: SettingsFormProps) {
   const router = useRouter();
   const { language, setLanguage, mounted } = useLanguage();
@@ -117,14 +122,16 @@ export function SettingsForm({ initialShop }: SettingsFormProps) {
                 }}
               >
                 <SelectTrigger className="w-full h-9 rounded-md bg-background border-input text-xs">
-                  <SelectValue />
+                  <SelectValue placeholder="Select mode">
+                    {rateDisplayModeLabels[rateDisplayMode]}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="rounded-md">
                   <SelectItem value="mmk_per_thb" className="text-xs">
-                    1 THB = [X] MMK
+                    1 THB = X MMK
                   </SelectItem>
                   <SelectItem value="thb_per_lakh" className="text-xs">
-                    1 Lakh MMK = [X] THB
+                    1 Lakh MMK = X THB
                   </SelectItem>
                 </SelectContent>
               </Select>

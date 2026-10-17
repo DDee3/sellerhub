@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getTodaySummary } from "@/lib/queries/deals";
@@ -8,9 +9,35 @@ export const metadata = {
   title: "Dashboard | exchange",
 };
 
-export default async function DashboardPage() {
+async function DashboardSummaryCards() {
   const { count, totalProfit } = await getTodaySummary();
 
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Card 1: Today's Deals */}
+      <div className="rounded-lg border border-border bg-card p-5 space-y-1">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Today&apos;s Deals
+        </p>
+        <div className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
+          {count}
+        </div>
+      </div>
+
+      {/* Card 2: Today's Profit */}
+      <div className="rounded-lg border border-border bg-card p-5 space-y-1">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Today&apos;s Profit
+        </p>
+        <div className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
+          {totalProfit.toLocaleString()} MMK
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header with Title and Prominent CTA */}
@@ -38,27 +65,16 @@ export default async function DashboardPage() {
       </div>
 
       {/* Summary Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Card 1: Today's Deals */}
-        <div className="rounded-lg border border-border bg-card p-5 space-y-1">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            Today&apos;s Deals
-          </p>
-          <div className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {count}
+      <Suspense
+        fallback={
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-pulse">
+            <div className="h-24 rounded-lg border border-border bg-card" />
+            <div className="h-24 rounded-lg border border-border bg-card" />
           </div>
-        </div>
-
-        {/* Card 2: Today's Profit */}
-        <div className="rounded-lg border border-border bg-card p-5 space-y-1">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            Today&apos;s Profit
-          </p>
-          <div className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {totalProfit.toLocaleString()} MMK
-          </div>
-        </div>
-      </div>
+        }
+      >
+        <DashboardSummaryCards />
+      </Suspense>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { connection } from "next/server";
@@ -9,7 +10,7 @@ export const metadata = {
   title: "Record a Deal | exchange",
 };
 
-export default async function NewDealPage() {
+async function DealFormLoader() {
   await connection();
   const supabase = await createClient();
 
@@ -33,6 +34,10 @@ export default async function NewDealPage() {
     }
   }
 
+  return <DealForm initialRateDisplayMode={rateDisplayMode} />;
+}
+
+export default function NewDealPage() {
   return (
     <div className="space-y-6 max-w-xl">
       {/* Back link & Title */}
@@ -49,8 +54,14 @@ export default async function NewDealPage() {
         </h1>
       </div>
 
-      {/* Form Container */}
-      <DealForm initialRateDisplayMode={rateDisplayMode} />
+      {/* Form Container wrapped in Suspense */}
+      <Suspense
+        fallback={
+          <div className="h-96 rounded-lg border border-border bg-card p-6 animate-pulse" />
+        }
+      >
+        <DealFormLoader />
+      </Suspense>
     </div>
   );
 }

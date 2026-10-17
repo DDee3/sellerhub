@@ -101,10 +101,10 @@ export interface Database {
           id: string
           shop_id: string
           direction: DealDirection
-          amount_in: number | null
-          customer_rate: number | null
+          amount_in: number
+          customer_rate: number
           source_rate: number | null
-          amount_out: number | null
+          amount_out: number
           profit_mmk: number | null
           note: string | null
           created_at: string
@@ -113,10 +113,10 @@ export interface Database {
           id?: string
           shop_id: string
           direction: DealDirection
-          amount_in: number | null
-          customer_rate: number | null
+          amount_in: number
+          customer_rate: number
           source_rate?: number | null
-          amount_out: number | null
+          amount_out: number
           profit_mmk?: number | null
           note?: string | null
           created_at?: string
@@ -125,15 +125,23 @@ export interface Database {
           id?: string
           shop_id?: string
           direction?: DealDirection
-          amount_in?: number | null
-          customer_rate?: number | null
+          amount_in?: number
+          customer_rate?: number
           source_rate?: number | null
-          amount_out?: number | null
+          amount_out?: number
           profit_mmk?: number | null
           note?: string | null
           created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "deals_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       products: {
         Row: {

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -7,7 +8,7 @@ export const metadata = {
   title: "Settings | exchange",
 };
 
-export default async function SettingsPage() {
+async function SettingsContent() {
   await connection();
   const supabase = await createClient();
 
@@ -50,7 +51,6 @@ export default async function SettingsPage() {
   if (!shop?.id) {
     return (
       <div className="space-y-4 max-w-2xl">
-        <h1 className="text-xl font-bold tracking-tight text-foreground">Settings</h1>
         <p className="text-sm text-destructive">
           Unable to locate or create a shop for your account. Please log out and sign up again.
         </p>
@@ -65,6 +65,10 @@ export default async function SettingsPage() {
       (shop.rate_display_mode as "mmk_per_thb" | "thb_per_lakh") || "mmk_per_thb",
   };
 
+  return <SettingsForm initialShop={initialShop} />;
+}
+
+export default function SettingsPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
@@ -74,7 +78,13 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      <SettingsForm initialShop={initialShop} />
+      <Suspense
+        fallback={
+          <div className="h-72 rounded-lg border border-border bg-card p-6 animate-pulse" />
+        }
+      >
+        <SettingsContent />
+      </Suspense>
     </div>
   );
 }
