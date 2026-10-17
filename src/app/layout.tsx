@@ -25,12 +25,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "SellerHub",
-  description: "Micro SaaS for online sellers in Myanmar",
+  title: "exchange",
+  description: "Minimal trade and deals management",
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
-    title: 'SellerHub',
+    title: 'exchange',
     statusBarStyle: 'default',
   },
   icons: {

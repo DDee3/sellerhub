@@ -4,52 +4,45 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Package,
-  ShoppingCart,
-  Truck,
   Users,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/components/providers/language-provider";
+import type { DictKey } from "@/lib/i18n/dictionary";
+import type { LucideIcon } from "lucide-react";
 
 interface NavItem {
+  key: DictKey;
   href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
+  icon: LucideIcon;
 }
 
 const navItems: NavItem[] = [
   {
+    key: "nav_dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
-    label: "Home",
   },
+  /* nav_deals placeholder - will be added in a later step */
   {
-    href: "/products",
-    icon: Package,
-    label: "Products",
-  },
-  {
-    href: "/orders",
-    icon: ShoppingCart,
-    label: "Orders",
-  },
-  {
-    href: "/shipments",
-    icon: Truck,
-    label: "Shipments",
-  },
-  {
+    key: "nav_customers",
     href: "/customers",
     icon: Users,
-    label: "Customers",
+  },
+  {
+    key: "nav_settings",
+    href: "/settings",
+    icon: Settings,
   },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   return (
-    <nav className="!flex md:!hidden fixed bottom-4 left-4 right-4 rounded-full border border-border bg-background/80 backdrop-blur-xl shadow-lift z-50 justify-around p-2">
+    <nav className="flex md:hidden fixed bottom-0 left-0 right-0 h-14 border-t border-border bg-background items-center justify-around z-40 select-none">
       {navItems.map((item) => {
         const isActive =
           pathname === item.href ||
@@ -58,20 +51,17 @@ export function MobileNav() {
 
         return (
           <Link
-            key={item.href}
+            key={item.key}
             href={item.href}
-            aria-label={item.label}
             className={cn(
-              "p-2 rounded-full hover:bg-muted active:scale-95 transition-transform flex items-center justify-center",
-              isActive && "bg-primary/10 text-primary"
+              "flex flex-col items-center justify-center flex-1 h-full gap-1 text-[11px] font-medium transition-colors",
+              isActive
+                ? "text-primary border-t-2 border-primary"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Icon
-              className={cn(
-                "h-5 w-5 transition-colors",
-                isActive ? "text-primary" : "text-muted-foreground"
-              )}
-            />
+            <Icon className="h-4 w-4" />
+            <span>{t(item.key)}</span>
           </Link>
         );
       })}
@@ -80,4 +70,3 @@ export function MobileNav() {
 }
 
 export default MobileNav;
-

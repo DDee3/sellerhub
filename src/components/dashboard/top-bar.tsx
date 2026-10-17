@@ -8,18 +8,15 @@ import type { DictKey } from "@/lib/i18n/dictionary";
 
 const routeKeys: Record<string, DictKey> = {
   "/dashboard": "nav_dashboard",
-  "/products": "nav_products",
-  "/orders": "nav_orders",
-  "/shipments": "nav_shipments",
+  /* nav_deals placeholder - will be added in a later step */
   "/customers": "nav_customers",
   "/settings": "nav_settings",
 };
 
-export function TopBar({ shopName }: { shopName?: string }) {
+export function TopBar() {
   const pathname = usePathname();
   const { t } = useLanguage();
 
-  // Find matching title based on path prefix
   const matchedKey =
     Object.keys(routeKeys).find(
       (path) => pathname === path || (path !== "/dashboard" && pathname.startsWith(path))
@@ -28,24 +25,14 @@ export function TopBar({ shopName }: { shopName?: string }) {
   const title = t(routeKeys[matchedKey] || "nav_dashboard");
 
   return (
-    <header className="hidden md:flex h-16 items-center justify-between border-b border-border/60 bg-background/80 backdrop-blur-md px-6 lg:px-8 sticky top-0 z-30">
+    <header className="hidden md:flex h-14 items-center justify-between border-b border-border bg-background px-6 sticky top-0 z-30">
       <div>
-        <h2 className="text-xl font-semibold tracking-tight text-foreground">{title}</h2>
+        <h2 className="text-sm font-semibold tracking-tight text-foreground">{title}</h2>
       </div>
 
-      <div className="flex items-center gap-3">
-        {/* Theme Toggle */}
-        <div className="flex items-center bg-muted/50 p-1 rounded-full border border-border/50 shadow-soft">
-          <ThemeToggle />
-        </div>
-
-        {/* User / Shop Avatar Dropdown */}
-        <div className="flex items-center gap-3 pl-2 border-l border-border/60">
-          <UserAvatarDropdown shopName={shopName} />
-          <span className="text-sm font-medium text-foreground hidden lg:inline">
-            {shopName}
-          </span>
-        </div>
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <UserAvatarDropdown />
       </div>
     </header>
   );

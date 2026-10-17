@@ -22,26 +22,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-const signupSchema = z
-  .object({
-    shop_name: z.string().min(1, { message: "ဆိုင်အမည် ထည့်သွင်းပေးပါ" }),
-    owner_name: z.string().min(1, { message: "ဆိုင်ပိုင်ရှင်အမည် ထည့်သွင်းပေးပါ" }),
-    phone: z.string().min(1, { message: "ဖုန်းနံပါတ် ထည့်သွင်းပေးပါ" }),
-    email: z
-      .string()
-      .min(1, { message: "အီးမေးလ် ထည့်သွင်းပေးပါ" })
-      .email({ message: "မှန်ကန်သော အီးမေးလ် ဖြစ်ရပါမည်" }),
-    password: z
-      .string()
-      .min(6, { message: "စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်" }),
-    confirm_password: z
-      .string()
-      .min(1, { message: "စကားဝှက်ကို ထပ်မံအတည်ပြုပေးပါ" }),
-  })
-  .refine((data) => data.password === data.confirm_password, {
-    message: "စကားဝှက်များ ကိုက်ညီမှု မရှိပါ",
-    path: ["confirm_password"],
-  });
+const signupSchema = z.object({
+  shop_name: z.string().min(1, { message: "Shop name is required" }),
+  email: z
+    .string()
+    .min(1, { message: "Email is required" })
+    .email({ message: "Please enter a valid email address" }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" }),
+});
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
@@ -53,173 +43,90 @@ export default function SignupPage() {
     resolver: zodResolver(signupSchema),
     defaultValues: {
       shop_name: "",
-      owner_name: "",
-      phone: "",
       email: "",
       password: "",
-      confirm_password: "",
     },
   });
 
   const onSubmit = async (values: SignupFormValues) => {
-    console.log("[Signup] Form submitted with values:", {
-      shop_name: values.shop_name,
-      owner_name: values.owner_name,
-      phone: values.phone,
-      email: values.email,
-    });
-
     setIsLoading(true);
     const supabase = createClient();
 
     try {
-      console.log("[Signup] Calling supabase.auth.signUp...");
-      // 1. Sign up user with metadata
+      // 1. supabase.auth.signUp
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: values.email,
+        email: values.email.trim(),
         password: values.password,
-        options: {
-          data: {
-            shop_name: values.shop_name,
-            owner_name: values.owner_name,
-            phone: values.phone,
-          },
-        },
       });
 
-      console.log("[Signup] supabase.auth.signUp result:", {
-        user: authData?.user?.id,
-        session: !!authData?.session,
-        error: authError,
-      });
-
+      // 2. if error -> toast, return
       if (authError) {
-        console.error("[Signup] authError:", authError);
-        toast.error(authError.message || "အကောင့်ဖွင့်ခြင်း မအောင်မြင်ပါ");
+        toast.error(authError.message || "Sign up failed");
         return;
       }
 
-      if (!authData.user) {
-        console.error("[Signup] No user returned from signUp");
-        toast.error("အကောင့်ဖွင့်ခြင်း မအောင်မြင်ပါ။ ပြန်လည်စမ်းသပ်ကြည့်ပါ။");
+      // 3. if no session -> toast, push /login, return
+      if (!authData?.session) {
+        toast("Check your email to confirm, then log in");
+        router.push("/login");
         return;
       }
 
-      console.log("[Signup] Inserting into shops table for user:", authData.user.id);
-      // 2. Insert into shops table
-      const { data: insertedShop, error: shopError } = await supabase
-        .from("shops")
-        .insert({
+      // 4. insert into shops (owner_id = user.id, name = shop name)
+      if (authData.user) {
+        const { error: shopError } = await supabase.from("shops").insert({
           owner_id: authData.user.id,
-          name: values.shop_name,
-          phone: values.phone,
-        })
-        .select()
-        .single();
+          name: values.shop_name.trim(),
+        });
 
-      console.log("[Signup] shops table insert result:", { insertedShop, shopError });
-
-      if (shopError) {
-        console.error("[Signup] shopError:", shopError);
-        toast.error(`ဆိုင်အချက်အလက် သိမ်းဆည်းရာတွင် အမှားဖြစ်ပေါ်ပါသည်: ${shopError.message}`);
-        return;
+        if (shopError) {
+          console.error("[Signup] Shop creation error:", shopError);
+          toast.error("Account created, but failed to initialize shop");
+        }
       }
 
-      toast.success("အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်");
+      // 5. push /dashboard, refresh
+      toast.success("Account created successfully");
       router.push("/dashboard");
       router.refresh();
     } catch (err: unknown) {
-      console.error("[Signup] Unexpected catch error:", err);
-      toast.error("တစ်ခုခု မှားယွင်းနေပါသည်။ ထပ်မံကြိုးစားကြည့်ပါ။");
+      console.error("[Signup] Unexpected error:", err);
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const onError = (errors: unknown) => {
-    console.warn("[Signup] Validation errors:", errors);
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="space-y-1 text-center">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">
-          အကောင့်အသစ်ဖွင့်ရန်
+    <div className="space-y-5">
+      <div className="space-y-1">
+        <h1 className="text-lg font-semibold tracking-tight text-foreground">
+          Create an account
         </h1>
-        <p className="text-sm text-slate-500">
-          SellerHub တွင် စတင်အသုံးပြုရန် အချက်အလက်များ ဖြည့်စွက်ပါ
+        <p className="text-xs text-muted-foreground">
+          Enter your details below to get started
         </p>
       </div>
 
       <Form {...form}>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            form.handleSubmit(onSubmit, onError)(e);
-          }}
-          noValidate
-          className="space-y-4"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3.5">
           <FormField
             control={form.control}
             name="shop_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-slate-700">
-                  ဆိုင်အမည်
+                <FormLabel className="text-xs font-medium text-foreground">
+                  Shop Name
                 </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    placeholder="ဥပမာ - Beauty Corner"
+                    placeholder="My Store"
                     disabled={isLoading}
-                    className="h-12 text-base px-4 bg-slate-50/50"
+                    className="h-9 text-sm bg-background border-input"
                   />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="owner_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-slate-700">
-                  ဆိုင်ပိုင်ရှင်အမည်
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    placeholder="ဥပမာ - ဒေါ်စုစု"
-                    disabled={isLoading}
-                    className="h-12 text-base px-4 bg-slate-50/50"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-slate-700">
-                  ဖုန်းနံပါတ်
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="tel"
-                    placeholder="09xxxxxxxxx"
-                    disabled={isLoading}
-                    className="h-12 text-base px-4 bg-slate-50/50"
-                  />
-                </FormControl>
-                <FormMessage />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -229,20 +136,20 @@ export default function SignupPage() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-slate-700">
-                  အီးမေးလ်
+                <FormLabel className="text-xs font-medium text-foreground">
+                  Email
                 </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     type="email"
-                    placeholder="example@mail.com"
+                    placeholder="name@example.com"
                     autoComplete="email"
                     disabled={isLoading}
-                    className="h-12 text-base px-4 bg-slate-50/50"
+                    className="h-9 text-sm bg-background border-input"
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -252,8 +159,8 @@ export default function SignupPage() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-slate-700">
-                  စကားဝှက် (အနည်းဆုံး ၆ လုံး)
+                <FormLabel className="text-xs font-medium text-foreground">
+                  Password
                 </FormLabel>
                 <FormControl>
                   <PasswordInput
@@ -261,32 +168,10 @@ export default function SignupPage() {
                     placeholder="••••••••"
                     autoComplete="new-password"
                     disabled={isLoading}
-                    className="h-12 text-base px-4 bg-slate-50/50"
+                    className="h-9 text-sm bg-background border-input"
                   />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="confirm_password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-slate-700">
-                  စကားဝှက် အတည်ပြုပါ
-                </FormLabel>
-                <FormControl>
-                  <PasswordInput
-                    {...field}
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                    disabled={isLoading}
-                    className="h-12 text-base px-4 bg-slate-50/50"
-                  />
-                </FormControl>
-                <FormMessage />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -294,28 +179,28 @@ export default function SignupPage() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 text-base font-semibold shadow-sm transition-all mt-2 cursor-pointer"
+            className="w-full h-9 text-sm font-medium mt-2"
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                အကောင့်ဖွင့်နေသည်...
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating account...
               </>
             ) : (
-              "အကောင့်ဖွင့်ရန်"
+              "Sign Up"
             )}
           </Button>
         </form>
       </Form>
 
-      <div className="text-center pt-2 border-t border-slate-100">
-        <p className="text-sm text-slate-600">
-          အကောင့်ရှိပြီးသားလား?{" "}
+      <div className="text-center pt-3 border-t border-border">
+        <p className="text-xs text-muted-foreground">
+          Already have an account?{" "}
           <Link
             href="/login"
-            className="font-semibold text-primary hover:underline underline-offset-4"
+            className="font-medium text-foreground hover:underline underline-offset-4"
           >
-            ဝင်ရောက်ရန်
+            Sign in
           </Link>
         </p>
       </div>
