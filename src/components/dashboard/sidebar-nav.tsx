@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  ArrowLeftRight,
   Users,
   Settings,
 } from "lucide-react";
@@ -25,7 +26,11 @@ const navItems: NavItem[] = [
     href: "/dashboard",
     icon: LayoutDashboard,
   },
-  /* nav_deals placeholder - will be added in a later step */
+  {
+    key: "nav_deals",
+    href: "/deals",
+    icon: ArrowLeftRight,
+  },
   {
     key: "nav_customers",
     href: "/customers",

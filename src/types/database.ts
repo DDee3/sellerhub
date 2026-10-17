@@ -12,6 +12,7 @@ export type OrderType = 'stock' | 'preorder'
 export type PaymentMethod = 'kbz_pay' | 'wave_pay' | 'cash' | 'cod'
 export type OrderStatus = 'pending' | 'confirmed' | 'paid' | 'packed' | 'shipped' | 'delivered' | 'cancelled'
 export type StockChangeReason = 'import' | 'sale' | 'adjustment' | 'damaged' | 'returned'
+export type DealDirection = 'mmk_to_thb' | 'thb_to_mmk'
 
 export interface Database {
   public: {
@@ -88,6 +89,45 @@ export interface Database {
           note?: string | null
           created_at?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      deals: {
+        Row: {
+          id: string
+          shop_id: string
+          direction: DealDirection
+          amount_in: number | null
+          customer_rate: number | null
+          source_rate: number | null
+          amount_out: number | null
+          profit_mmk: number | null
+          note: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          shop_id: string
+          direction: DealDirection
+          amount_in: number | null
+          customer_rate: number | null
+          source_rate?: number | null
+          amount_out: number | null
+          profit_mmk?: number | null
+          note?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          shop_id?: string
+          direction?: DealDirection
+          amount_in?: number | null
+          customer_rate?: number | null
+          source_rate?: number | null
+          amount_out?: number | null
+          profit_mmk?: number | null
+          note?: string | null
+          created_at?: string
         }
         Relationships: []
       }
@@ -317,3 +357,7 @@ export interface Database {
     }
   }
 }
+
+export type Deal = Database['public']['Tables']['deals']['Row']
+export type InsertDeal = Database['public']['Tables']['deals']['Insert']
+export type UpdateDeal = Database['public']['Tables']['deals']['Update']

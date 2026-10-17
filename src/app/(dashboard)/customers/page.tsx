@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { getCustomers } from "@/lib/queries/customers";
 import { CustomersView } from "@/components/customers/customers-view";
 
@@ -10,6 +11,7 @@ export default async function CustomersPage({
 }: {
   searchParams: SearchParams;
 }) {
+  await connection();
   const params = await searchParams;
   const customers = await getCustomers({ search: params.q });
 

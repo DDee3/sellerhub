@@ -55,9 +55,7 @@ export async function getCustomers(opts: {
 
   let query = supabase
     .from("customers")
-    .select<string, RawCustomerQueryRow>(
-      "id, name, phone, facebook_name, telegram_username, address, orders(id, total_price, balance_due, status)"
-    )
+    .select("id, name, phone, facebook_name, telegram_username, address")
     .eq("shop_id", shop.id);
 
   if (opts.search && opts.search.trim() !== "") {
@@ -75,18 +73,6 @@ export async function getCustomers(opts: {
   }
 
   return data.map((customer): CustomerRow => {
-    const ordersList = customer.orders ?? [];
-    const validOrders = ordersList.filter((o) => o.status !== "cancelled");
-    const orders_count = validOrders.length;
-
-    const total_spent = ordersList
-      .filter((o) => o.status === "delivered")
-      .reduce((sum, o) => sum + (Number(o.total_price) || 0), 0);
-
-    const outstanding_balance = ordersList
-      .filter((o) => o.status === "pending" || o.status === "confirmed")
-      .reduce((sum, o) => sum + (Number(o.balance_due) || 0), 0);
-
     return {
       id: customer.id,
       name: customer.name,
@@ -94,9 +80,9 @@ export async function getCustomers(opts: {
       facebook_name: customer.facebook_name,
       telegram_username: customer.telegram_username,
       address: customer.address,
-      orders_count,
-      total_spent,
-      outstanding_balance,
+      orders_count: 0,
+      total_spent: 0,
+      outstanding_balance: 0,
     };
   });
 }

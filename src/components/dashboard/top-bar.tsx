@@ -8,7 +8,7 @@ import type { DictKey } from "@/lib/i18n/dictionary";
 
 const routeKeys: Record<string, DictKey> = {
   "/dashboard": "nav_dashboard",
-  /* nav_deals placeholder - will be added in a later step */
+  "/deals": "nav_deals",
   "/customers": "nav_customers",
   "/settings": "nav_settings",
 };
