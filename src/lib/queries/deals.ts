@@ -209,3 +209,71 @@ export async function getShopRateDisplayMode(
 
   return (shop?.rate_display_mode as RateDisplayMode) || "mmk_per_thb";
 }
+
+export interface CashFloat {
+  netMmk: number;
+  netThb: number;
+}
+
+export async function getCashFloat(shopId?: string): Promise<CashFloat> {
+  await connection();
+  const supabase = await createClient();
+
+  let targetShopId = shopId;
+
+  if (!targetShopId) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { netMmk: 0, netThb: 0 };
+    }
+
+    const { data: shop } = await supabase
+      .from("shops")
+      .select("id")
+      .eq("owner_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!shop) {
+      return { netMmk: 0, netThb: 0 };
+    }
+
+    targetShopId = shop.id;
+  }
+
+  const { data, error } = await supabase
+    .from("deals")
+    .select("direction, amount_in, amount_out")
+    .eq("shop_id", targetShopId)
+    .is("source_rate", null);
+
+  if (error || !data) {
+    console.error("Error fetching cash float:", error);
+    return { netMmk: 0, netThb: 0 };
+  }
+
+  let netMmk = 0;
+  let netThb = 0;
+
+  for (const deal of data) {
+    const amountIn = Number(deal.amount_in) || 0;
+    const amountOut = Number(deal.amount_out) || 0;
+
+    if (deal.direction === "mmk_to_thb") {
+      netMmk -= amountIn;
+      netThb += amountOut;
+    } else if (deal.direction === "thb_to_mmk") {
+      netThb -= amountIn;
+      netMmk += amountOut;
+    }
+  }
+
+  return {
+    netMmk: Math.round(netMmk * 100) / 100,
+    netThb: Math.round(netThb * 100) / 100,
+  };
+}

@@ -42,8 +42,6 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
   }
 
   useEffect(() => {
-    if (initialRateDisplayMode) return;
-
     let isMounted = true;
     async function loadShopSetting() {
       const supabase = createClient();
@@ -69,7 +67,7 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
     return () => {
       isMounted = false;
     };
-  }, [initialRateDisplayMode]);
+  }, []);
 
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealSchema) as unknown as Resolver<DealFormValues>,
@@ -90,44 +88,41 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
   const sourceRateRaw = useWatch({ control: form.control, name: "source_rate" });
 
   const amountIn = Number(amountInRaw);
-  const rawCustomerRate = Number(customerRateRaw);
-  const rawSourceRate =
+  const rate_mode = rateDisplayMode;
+  const customer_rate = Number(customerRateRaw);
+  const source_rate =
     sourceRateRaw !== "" && sourceRateRaw !== null && sourceRateRaw !== undefined
       ? Number(sourceRateRaw)
       : null;
 
-  // Real rates: convert Lakh rates to per-THB rate before calculating amount_out and profit
-  let real_customer_rate: number | null = null;
-  if (rawCustomerRate > 0) {
-    real_customer_rate =
-      rateDisplayMode === "thb_per_lakh"
-        ? 100000 / rawCustomerRate
-        : rawCustomerRate;
-  }
+  // Real rates: convert 'Lakh' rate to 'per-THB' rate before calculating
+  const real_customer_rate =
+    customer_rate > 0
+      ? rate_mode === "thb_per_lakh"
+        ? 100000 / customer_rate
+        : customer_rate
+      : null;
 
-  let real_source_rate: number | null = null;
-  if (rawSourceRate !== null && rawSourceRate > 0) {
-    real_source_rate =
-      rateDisplayMode === "thb_per_lakh"
-        ? 100000 / rawSourceRate
-        : rawSourceRate;
-  }
+  const real_source_rate =
+    source_rate !== null && source_rate > 0
+      ? rate_mode === "thb_per_lakh"
+        ? 100000 / source_rate
+        : source_rate
+      : null;
 
-  // Live calculations using the real converted rates
+  // Live calculations using the real_ rates
   let amountOut: number | null = null;
   let profitMmk: number | null = null;
 
   if (amountIn > 0 && real_customer_rate !== null && real_customer_rate > 0) {
     if (direction === "mmk_to_thb") {
       amountOut = amountIn / real_customer_rate;
+      if (real_source_rate !== null && real_source_rate > 0) {
+        profitMmk = amountIn - amountOut * real_source_rate;
+      }
     } else {
       amountOut = amountIn * real_customer_rate;
-    }
-
-    if (real_source_rate !== null && real_source_rate > 0) {
-      if (direction === "mmk_to_thb") {
-        profitMmk = amountIn - amountOut * real_source_rate;
-      } else {
+      if (real_source_rate !== null && real_source_rate > 0) {
         profitMmk = amountIn * real_source_rate - amountOut;
       }
     }
@@ -175,12 +170,10 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
         shop = newShop;
       }
 
-      const activeMode: RateDisplayMode =
-        (shop.rate_display_mode as RateDisplayMode) || rateDisplayMode || "mmk_per_thb";
-
+      const rate_mode = rateDisplayMode;
       const finalAmountIn = Number(values.amount_in);
-      const rawFinalCustomerRate = Number(values.customer_rate);
-      const rawFinalSourceRate =
+      const customer_rate = Number(values.customer_rate);
+      const source_rate =
         values.source_rate !== "" &&
         values.source_rate !== null &&
         values.source_rate !== undefined &&
@@ -188,39 +181,41 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
           ? Number(values.source_rate)
           : null;
 
-      // Convert to real per-THB rates
-      const final_real_customer_rate =
-        activeMode === "thb_per_lakh"
-          ? 100000 / rawFinalCustomerRate
-          : rawFinalCustomerRate;
+      // Real rates: convert 'Lakh' rate to 'per-THB' rate before calculating
+      const real_customer_rate =
+        rate_mode === "thb_per_lakh"
+          ? 100000 / customer_rate
+          : customer_rate;
 
-      if (!final_real_customer_rate || final_real_customer_rate <= 0) {
+      if (!real_customer_rate || real_customer_rate <= 0) {
         toast.error("Invalid customer rate");
         return;
       }
 
-      const final_real_source_rate =
-        rawFinalSourceRate !== null
-          ? activeMode === "thb_per_lakh"
-            ? 100000 / rawFinalSourceRate
-            : rawFinalSourceRate
+      const real_source_rate =
+        source_rate !== null
+          ? rate_mode === "thb_per_lakh"
+            ? 100000 / source_rate
+            : source_rate
           : null;
 
       let finalAmountOut = 0;
-      if (values.direction === "mmk_to_thb") {
-        finalAmountOut = finalAmountIn / final_real_customer_rate;
-      } else {
-        finalAmountOut = finalAmountIn * final_real_customer_rate;
-      }
-      finalAmountOut = Number(finalAmountOut.toFixed(2));
-
       let finalProfitMmk: number | null = null;
-      if (final_real_source_rate !== null) {
-        if (values.direction === "mmk_to_thb") {
-          finalProfitMmk = finalAmountIn - finalAmountOut * final_real_source_rate;
-        } else {
-          finalProfitMmk = finalAmountIn * final_real_source_rate - finalAmountOut;
+
+      if (values.direction === "mmk_to_thb") {
+        finalAmountOut = finalAmountIn / real_customer_rate;
+        if (real_source_rate !== null) {
+          finalProfitMmk = finalAmountIn - finalAmountOut * real_source_rate;
         }
+      } else {
+        finalAmountOut = finalAmountIn * real_customer_rate;
+        if (real_source_rate !== null) {
+          finalProfitMmk = finalAmountIn * real_source_rate - finalAmountOut;
+        }
+      }
+
+      finalAmountOut = Number(finalAmountOut.toFixed(2));
+      if (finalProfitMmk !== null) {
         finalProfitMmk = Number(finalProfitMmk.toFixed(2));
       }
 
@@ -228,10 +223,10 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
         shop_id: shop.id,
         direction: values.direction,
         amount_in: finalAmountIn,
-        customer_rate: Number(final_real_customer_rate.toFixed(6)),
+        customer_rate: Number(real_customer_rate.toFixed(6)),
         source_rate:
-          final_real_source_rate !== null
-            ? Number(final_real_source_rate.toFixed(6))
+          real_source_rate !== null
+            ? Number(real_source_rate.toFixed(6))
             : null,
         amount_out: finalAmountOut,
         profit_mmk: finalProfitMmk,
@@ -315,24 +310,55 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
           <FormField
             control={form.control}
             name="amount_in"
-            render={({ field }) => (
-              <FormItem className="space-y-1.5">
-                <FormLabel className="text-[13px] font-normal text-foreground">
-                  Amount in ({inCurrency})
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="number"
-                    step="any"
-                    placeholder={`e.g. ${direction === "mmk_to_thb" ? "100000" : "1000"}`}
-                    disabled={isSubmitting}
-                    className="h-10 text-[15px] font-light bg-card border-input tabular-nums"
-                  />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              const quickAmounts = [
+                { label: "10k", value: 10000 },
+                { label: "50k", value: 50000 },
+                { label: "1 Lakh", value: 100000 },
+                { label: "5 Lakh", value: 500000 },
+                { label: "10 Lakh", value: 1000000 },
+              ];
+
+              return (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-[13px] font-normal text-foreground">
+                    Amount in ({inCurrency})
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="number"
+                      step="any"
+                      placeholder={`e.g. ${direction === "mmk_to_thb" ? "100000" : "1000"}`}
+                      disabled={isSubmitting}
+                      className="h-10 text-[15px] font-light bg-card border-input tabular-nums"
+                    />
+                  </FormControl>
+                  {/* Quick Amount Buttons */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    {quickAmounts.map((item) => (
+                      <button
+                        key={item.label}
+                        type="button"
+                        disabled={isSubmitting}
+                        onClick={() => {
+                          field.onChange(item.value);
+                        }}
+                        className={cn(
+                          "h-7 px-2.5 text-xs rounded-full border transition-all select-none disabled:opacity-50",
+                          Number(field.value) === item.value
+                            ? "border-primary/50 bg-primary/10 text-primary font-normal"
+                            : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted font-light"
+                        )}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              );
+            }}
           />
 
           {/* Customer Rate */}
@@ -341,9 +367,23 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
             name="customer_rate"
             render={({ field }) => (
               <FormItem className="space-y-1.5">
-                <FormLabel className="text-[13px] font-normal text-foreground">
-                  {customerRateLabel}
-                </FormLabel>
+                <div className="flex items-center justify-between">
+                  <FormLabel className="text-[13px] font-normal text-foreground">
+                    {customerRateLabel}
+                  </FormLabel>
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() =>
+                      setRateDisplayMode((prev) =>
+                        prev === "thb_per_lakh" ? "mmk_per_thb" : "thb_per_lakh"
+                      )
+                    }
+                    className="text-[11px] text-primary hover:underline font-light"
+                  >
+                    Switch to {rateDisplayMode === "thb_per_lakh" ? "1 THB = X MMK" : "1 Lakh MMK = X THB"}
+                  </button>
+                </div>
                 <FormControl>
                   <Input
                     {...field}

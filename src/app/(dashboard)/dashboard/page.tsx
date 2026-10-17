@@ -3,10 +3,10 @@ import Link from "next/link";
 import { Plus, ArrowRight } from "lucide-react";
 import {
   getTodaySummary,
+  getCashFloat,
   getRecentDeals,
   getShopRateDisplayMode,
 } from "@/lib/queries/deals";
-import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const metadata = {
@@ -14,7 +14,10 @@ export const metadata = {
 };
 
 async function DashboardSummaryCards() {
-  const { count, totalProfit } = await getTodaySummary();
+  const [{ count, totalProfit }, { netMmk, netThb }] = await Promise.all([
+    getTodaySummary(),
+    getCashFloat(),
+  ]);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -36,6 +39,28 @@ async function DashboardSummaryCards() {
         <div className="text-2xl font-light tracking-tight text-foreground tabular-nums flex items-baseline gap-1.5">
           <span>{totalProfit.toLocaleString()}</span>
           <span className="text-xs font-light text-muted-foreground">MMK</span>
+        </div>
+      </div>
+
+      {/* Card 3: Own Float MMK */}
+      <div className="rounded-xl border border-border bg-card p-4 shadow-stripi-1 space-y-1">
+        <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-[0.1px]">
+          Own Float MMK
+        </p>
+        <div className="text-2xl font-light tracking-tight text-foreground tabular-nums flex items-baseline gap-1.5">
+          <span>{netMmk.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+          <span className="text-xs font-light text-muted-foreground">MMK</span>
+        </div>
+      </div>
+
+      {/* Card 4: Own Float THB */}
+      <div className="rounded-xl border border-border bg-card p-4 shadow-stripi-1 space-y-1">
+        <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-[0.1px]">
+          Own Float THB
+        </p>
+        <div className="text-2xl font-light tracking-tight text-foreground tabular-nums flex items-baseline gap-1.5">
+          <span>{netThb.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+          <span className="text-xs font-light text-muted-foreground">THB</span>
         </div>
       </div>
     </div>
@@ -87,7 +112,7 @@ async function RecentDealsSection() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-[13px]">
               <thead>
-                <tr className="border-b border-border bg-canvas-soft text-muted-foreground font-normal">
+                <tr className="border-b border-border bg-muted/50 text-muted-foreground font-normal">
                   <th className="py-2.5 px-3.5 font-normal text-[11px] tracking-[0.05px]">
                     Date
                   </th>
@@ -197,34 +222,22 @@ async function RecentDealsSection() {
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
-      {/* Header with Title and Prominent CTA */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-light tracking-[-0.64px] text-foreground">
-            Dashboard
-          </h1>
-          <p className="text-xs sm:text-sm font-light text-muted-foreground mt-0.5">
-            Overview of today&apos;s exchange activity
-          </p>
-        </div>
-        <div>
-          <Link
-            href="/deals/new"
-            className={cn(
-              buttonVariants({ variant: "default" }),
-              "gap-1.5 h-8 px-3.5 text-xs font-normal inline-flex items-center"
-            )}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>Record a Deal</span>
-          </Link>
-        </div>
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-light tracking-[-0.64px] text-foreground">
+          Dashboard
+        </h1>
+        <p className="text-xs sm:text-sm font-light text-muted-foreground mt-0.5">
+          Overview of today&apos;s exchange activity
+        </p>
       </div>
 
       {/* Summary Cards Grid */}
       <Suspense
         fallback={
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-pulse">
+            <div className="h-20 rounded-xl border border-border bg-card shadow-stripi-1" />
+            <div className="h-20 rounded-xl border border-border bg-card shadow-stripi-1" />
             <div className="h-20 rounded-xl border border-border bg-card shadow-stripi-1" />
             <div className="h-20 rounded-xl border border-border bg-card shadow-stripi-1" />
           </div>
