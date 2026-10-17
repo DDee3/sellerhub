@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { UserAvatarDropdown } from "@/components/dashboard/user-avatar-dropdown";
 import { useLanguage } from "@/components/providers/language-provider";
 import type { DictKey } from "@/lib/i18n/dictionary";
 
@@ -33,7 +32,6 @@ export function TopBar() {
 
       <div className="flex items-center gap-2">
         <ThemeToggle />
-        <UserAvatarDropdown />
       </div>
     </header>
   );

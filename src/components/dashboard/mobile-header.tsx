@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { UserAvatarDropdown } from "@/components/dashboard/user-avatar-dropdown";
 
-export function MobileHeader({ shopName }: { shopName?: string }) {
+export function MobileHeader() {
   return (
     <header className="flex md:hidden h-12 items-center justify-between border-b border-border bg-card/90 backdrop-blur-md px-4 sticky top-0 z-40 select-none">
       {/* Brand on Left */}
@@ -18,7 +17,6 @@ export function MobileHeader({ shopName }: { shopName?: string }) {
       {/* Right controls */}
       <div className="flex items-center gap-2">
         <ThemeToggle />
-        <UserAvatarDropdown shopName={shopName} />
       </div>
     </header>
   );

@@ -58,7 +58,9 @@ export async function getTodaySummary(): Promise<TodaySummary> {
 
   const { data, error } = await supabase
     .from("deals")
-    .select("profit_mmk")
+    .select(
+      "id, direction, amount_in, customer_rate, source_rate, amount_out, profit_mmk"
+    )
     .eq("shop_id", shop.id)
     .gte("created_at", todayStart);
 
@@ -68,10 +70,40 @@ export async function getTodaySummary(): Promise<TodaySummary> {
   }
 
   const count = data.length;
-  const totalProfit = data.reduce(
-    (acc, deal) => acc + (Number(deal.profit_mmk) || 0),
-    0
-  );
+  let totalProfit = 0;
+
+  for (const deal of data) {
+    let profit = deal.profit_mmk;
+    if (deal.customer_rate > 500) {
+      const realCustRate = 100000 / deal.customer_rate;
+      const realSrcRate =
+        deal.source_rate && deal.source_rate > 500
+          ? 100000 / deal.source_rate
+          : deal.source_rate;
+      const amountIn = Number(deal.amount_in) || 0;
+      const amountOut =
+        deal.direction === "mmk_to_thb"
+          ? amountIn / realCustRate
+          : amountIn * realCustRate;
+      profit = realSrcRate
+        ? deal.direction === "mmk_to_thb"
+          ? amountIn - amountOut * realSrcRate
+          : amountIn * realSrcRate - amountOut
+        : null;
+
+      supabase
+        .from("deals")
+        .update({
+          customer_rate: Number(realCustRate.toFixed(6)),
+          source_rate: realSrcRate ? Number(realSrcRate.toFixed(6)) : null,
+          amount_out: Number(amountOut.toFixed(2)),
+          profit_mmk: profit !== null ? Number(profit.toFixed(2)) : null,
+        })
+        .eq("id", deal.id)
+        .then();
+    }
+    totalProfit += Number(profit) || 0;
+  }
 
   return {
     count,
@@ -122,7 +154,36 @@ export async function getDeals(shopId?: string): Promise<DealListItem[]> {
     return [];
   }
 
-  return data as DealListItem[];
+  return (data as DealListItem[]).map(sanitizeDeal);
+}
+
+function sanitizeDeal(deal: DealListItem): DealListItem {
+  if (deal.customer_rate > 500) {
+    const realCustRate = 100000 / deal.customer_rate;
+    const realSrcRate =
+      deal.source_rate && deal.source_rate > 500
+        ? 100000 / deal.source_rate
+        : deal.source_rate;
+    const amountIn = Number(deal.amount_in) || 0;
+    const amountOut =
+      deal.direction === "mmk_to_thb"
+        ? Number((amountIn / realCustRate).toFixed(2))
+        : Number((amountIn * realCustRate).toFixed(2));
+    const profit = realSrcRate
+      ? deal.direction === "mmk_to_thb"
+        ? Number((amountIn - amountOut * realSrcRate).toFixed(2))
+        : Number((amountIn * realSrcRate - amountOut).toFixed(2))
+      : null;
+
+    return {
+      ...deal,
+      customer_rate: Number(realCustRate.toFixed(6)),
+      source_rate: realSrcRate ? Number(realSrcRate.toFixed(6)) : null,
+      amount_out: amountOut,
+      profit_mmk: profit,
+    };
+  }
+  return deal;
 }
 
 export async function getRecentDeals(
@@ -172,7 +233,7 @@ export async function getRecentDeals(
     return [];
   }
 
-  return data as DealListItem[];
+  return (data as DealListItem[]).map(sanitizeDeal);
 }
 
 export async function getShopRateDisplayMode(

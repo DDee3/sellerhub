@@ -98,14 +98,14 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
   // Real rates: convert 'Lakh' rate to 'per-THB' rate before calculating
   const real_customer_rate =
     customer_rate > 0
-      ? rate_mode === "thb_per_lakh"
+      ? rate_mode === "thb_per_lakh" || customer_rate > 500
         ? 100000 / customer_rate
         : customer_rate
       : null;
 
   const real_source_rate =
     source_rate !== null && source_rate > 0
-      ? rate_mode === "thb_per_lakh"
+      ? rate_mode === "thb_per_lakh" || source_rate > 500
         ? 100000 / source_rate
         : source_rate
       : null;
@@ -183,7 +183,7 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
 
       // Real rates: convert 'Lakh' rate to 'per-THB' rate before calculating
       const real_customer_rate =
-        rate_mode === "thb_per_lakh"
+        rate_mode === "thb_per_lakh" || customer_rate > 500
           ? 100000 / customer_rate
           : customer_rate;
 
@@ -194,7 +194,7 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
 
       const real_source_rate =
         source_rate !== null
-          ? rate_mode === "thb_per_lakh"
+          ? rate_mode === "thb_per_lakh" || source_rate > 500
             ? 100000 / source_rate
             : source_rate
           : null;

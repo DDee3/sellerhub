@@ -129,15 +129,32 @@ export function SidebarNav({ className }: SidebarNavProps) {
 
           const { data: deals } = await supabase
             .from("deals")
-            .select("profit_mmk")
+            .select("direction, amount_in, customer_rate, source_rate, profit_mmk")
             .eq("shop_id", shop.id)
             .gte("created_at", todayStart);
 
           if (deals && isMounted) {
-            const sum = deals.reduce(
-              (acc, d) => acc + (Number(d.profit_mmk) || 0),
-              0
-            );
+            const sum = deals.reduce((acc, d) => {
+              let p = d.profit_mmk;
+              if (d.customer_rate && d.customer_rate > 500) {
+                const realCustRate = 100000 / d.customer_rate;
+                const realSrcRate =
+                  d.source_rate && d.source_rate > 500
+                    ? 100000 / d.source_rate
+                    : d.source_rate;
+                const amtIn = Number(d.amount_in) || 0;
+                const amtOut =
+                  d.direction === "mmk_to_thb"
+                    ? amtIn / realCustRate
+                    : amtIn * realCustRate;
+                p = realSrcRate
+                  ? d.direction === "mmk_to_thb"
+                    ? amtIn - amtOut * realSrcRate
+                    : amtIn * realSrcRate - amtOut
+                  : null;
+              }
+              return acc + (Number(p) || 0);
+            }, 0);
             setTodayProfit(sum);
           }
         }
