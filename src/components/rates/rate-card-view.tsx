@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ClipboardList,
   Copy,
@@ -8,53 +8,50 @@ import {
   RotateCw,
   Clock,
   Sparkles,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 export function RateCardView() {
   const [rate1, setRate1] = useState<string>("137.36");
   const [rate2, setRate2] = useState<string>("137.55");
   const [rate3, setRate3] = useState<string>("134.4");
 
-  const [timestamp, setTimestamp] = useState<{ date: string; time: string }>(() => {
-    if (typeof window === "undefined") {
-      return { date: "Oct 17", time: "1:11 PM" };
-    }
-    const now = new Date();
-    return {
-      date: now.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
-      time: now.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }),
-    };
-  });
+  const [previewTheme, setPreviewTheme] = useState<"light" | "dark">("light");
+  const [timeString, setTimeString] = useState<string>("");
   const [copied, setCopied] = useState<boolean>(false);
 
-  const getNowFormatted = () => {
+  useEffect(() => {
     const now = new Date();
-    const dateStr = now.toLocaleDateString("en-US", {
+    const datePart = now.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
     });
-    const timeStr = now.toLocaleTimeString("en-US", {
+    const timePart = now.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
-      hour12: true,
     });
-    return { date: dateStr, time: timeStr };
-  };
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setTimeString(`${datePart} ( ${timePart} )`);
+  }, []);
 
   const refreshTimestamp = () => {
-    setTimestamp(getNowFormatted());
+    const now = new Date();
+    const datePart = now.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+    const timePart = now.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    setTimeString(`${datePart} ( ${timePart} )`);
     toast.success("Timestamp refreshed to current time");
   };
 
@@ -67,7 +64,7 @@ export function RateCardView() {
   const calc3 = !isNaN(num3) && num3 > 0 ? Math.floor(100000 / num3) : 0;
 
   const outputText = `Update Rate
-${timestamp.date} ( ${timestamp.time} )💸
+${timeString}💸
 
 [kyat➡️baht]  { ${calc1} baht }
 ———Baht 50,000အထက်———
@@ -99,7 +96,7 @@ K PAY / KBZ Special / Wave Pay / AYA / CB Special / AYA PAY / CB PAY နဲ့�
     setRate1("137.36");
     setRate2("137.55");
     setRate3("134.4");
-    setTimestamp(getNowFormatted());
+    refreshTimestamp();
     toast.success("Reset rates to defaults");
   };
 
@@ -249,33 +246,71 @@ K PAY / KBZ Special / Wave Pay / AYA / CB Special / AYA PAY / CB PAY နဲ့�
         {/* Right Column: Live Preview & Copy */}
         <div className="space-y-4">
           <Card className="bg-card text-card-foreground border-border rounded-xl shadow-stripi-1 p-5 md:p-6 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-border">
+            <div className="flex items-center justify-between pb-3 border-b border-border flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                 <h2 className="text-[15px] font-normal text-foreground tracking-[-0.2px]">
                   Live Preview
                 </h2>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground font-light flex items-center gap-1.5">
+              <div className="flex items-center gap-2.5">
+                {/* Theme preview toggle */}
+                <div className="flex items-center rounded-full border border-border bg-muted/60 p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewTheme("light")}
+                    className={cn(
+                      "px-2.5 py-0.5 text-[11px] rounded-full transition-all flex items-center gap-1",
+                      previewTheme === "light"
+                        ? "bg-card text-foreground shadow-xs font-normal"
+                        : "text-muted-foreground hover:text-foreground font-light"
+                    )}
+                  >
+                    <Sun className="h-3 w-3" />
+                    <span>Light</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewTheme("dark")}
+                    className={cn(
+                      "px-2.5 py-0.5 text-[11px] rounded-full transition-all flex items-center gap-1",
+                      previewTheme === "dark"
+                        ? "bg-card text-foreground shadow-xs font-normal"
+                        : "text-muted-foreground hover:text-foreground font-light"
+                    )}
+                  >
+                    <Moon className="h-3 w-3" />
+                    <span>Dark</span>
+                  </button>
+                </div>
+
+                {/* Timestamp & Refresh */}
+                <div className="flex items-center gap-1 text-xs text-muted-foreground font-light pl-1 border-l border-border">
                   <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span>
-                    {timestamp.date} ( {timestamp.time} )
+                  <span className="hidden sm:inline">
+                    {timeString}
                   </span>
-                </span>
-                <button
-                  type="button"
-                  onClick={refreshTimestamp}
-                  title="Update timestamp to current time"
-                  className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                >
-                  <RotateCw className="h-3.5 w-3.5" />
-                </button>
+                  <button
+                    type="button"
+                    onClick={refreshTimestamp}
+                    title="Update timestamp to current time"
+                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  >
+                    <RotateCw className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Generated Output Preview Box */}
-            <div className="relative rounded-lg bg-canvas-soft border border-border p-4 text-[13px] leading-relaxed font-mono whitespace-pre-wrap select-all text-foreground min-h-[320px]">
+            {/* Generated Output Preview Box (Chat Bubble style) */}
+            <div
+              className={cn(
+                "relative rounded-xl p-4 sm:p-5 text-[13.5px] sm:text-sm leading-relaxed font-sans whitespace-pre-wrap select-all min-h-[340px] transition-colors border shadow-xs",
+                previewTheme === "light"
+                  ? "bg-white text-slate-900 border-slate-200"
+                  : "bg-slate-950 text-slate-100 border-slate-800"
+              )}
+            >
               {outputText}
             </div>
           </Card>
