@@ -338,3 +338,52 @@ export async function getCashFloat(shopId?: string): Promise<CashFloat> {
     netThb: Math.round(netThb * 100) / 100,
   };
 }
+
+export async function getShopFloat(shopId?: string): Promise<{
+  float_mmk: number;
+  float_thb: number;
+}> {
+  await connection();
+  const supabase = await createClient();
+
+  let targetShopId = shopId;
+
+  if (!targetShopId) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { float_mmk: 0, float_thb: 0 };
+    }
+
+    const { data: shop } = await supabase
+      .from("shops")
+      .select("float_mmk, float_thb")
+      .eq("owner_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!shop) {
+      return { float_mmk: 0, float_thb: 0 };
+    }
+
+    return {
+      float_mmk: Number(shop.float_mmk) || 0,
+      float_thb: Number(shop.float_thb) || 0,
+    };
+  }
+
+  const { data: shop } = await supabase
+    .from("shops")
+    .select("float_mmk, float_thb")
+    .eq("id", targetShopId)
+    .maybeSingle();
+
+  return {
+    float_mmk: Number(shop?.float_mmk) || 0,
+    float_thb: Number(shop?.float_thb) || 0,
+  };
+}
+

@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { Store } from "lucide-react";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,6 +11,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="relative z-10 w-full max-w-sm space-y-6">
         {/* Brand header */}
         <div className="flex flex-col items-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 mb-4 shadow-sm border border-primary/20">
+            <Store className="h-8 w-8 text-primary" />
+          </div>
           <Link href="/" className="inline-flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-primary shrink-0" />
             <span className="font-light text-2xl tracking-[-0.96px] text-foreground lowercase">

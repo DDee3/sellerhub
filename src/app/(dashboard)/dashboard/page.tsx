@@ -4,9 +4,11 @@ import { Plus, ArrowRight } from "lucide-react";
 import {
   getTodaySummary,
   getCashFloat,
+  getShopFloat,
   getRecentDeals,
   getShopRateDisplayMode,
 } from "@/lib/queries/deals";
+import { UpdateFloatDialog } from "@/components/dashboard/update-float-dialog";
 import { cn } from "@/lib/utils";
 
 export const metadata = {
@@ -14,10 +16,16 @@ export const metadata = {
 };
 
 async function DashboardSummaryCards() {
-  const [{ count, totalProfit }, { netMmk, netThb }] = await Promise.all([
+  const [{ count, totalProfit }, { netMmk, netThb }, shopFloat] = await Promise.all([
     getTodaySummary(),
     getCashFloat(),
+    getShopFloat(),
   ]);
+
+  const baseMmk = shopFloat.float_mmk;
+  const baseThb = shopFloat.float_thb;
+  const currentMmk = baseMmk + netMmk;
+  const currentThb = baseThb + netThb;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -44,24 +52,40 @@ async function DashboardSummaryCards() {
 
       {/* Card 3: Own Float MMK */}
       <div className="rounded-xl border border-border bg-card p-4 shadow-stripi-1 space-y-1">
-        <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-[0.1px]">
-          Own Float MMK
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-[0.1px]">
+            Own Float MMK
+          </p>
+          <UpdateFloatDialog currentMmk={baseMmk} currentThb={baseThb} />
+        </div>
         <div className="text-2xl font-light tracking-tight text-foreground tabular-nums flex items-baseline gap-1.5">
-          <span>{netMmk.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+          <span>{currentMmk.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
           <span className="text-xs font-light text-muted-foreground">MMK</span>
         </div>
+        {netMmk !== 0 && (
+          <p className="text-[10px] font-light text-muted-foreground">
+            Base: {baseMmk.toLocaleString()} MMK ({netMmk > 0 ? "+" : ""}{netMmk.toLocaleString()} net)
+          </p>
+        )}
       </div>
 
       {/* Card 4: Own Float THB */}
       <div className="rounded-xl border border-border bg-card p-4 shadow-stripi-1 space-y-1">
-        <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-[0.1px]">
-          Own Float THB
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-[0.1px]">
+            Own Float THB
+          </p>
+          <UpdateFloatDialog currentMmk={baseMmk} currentThb={baseThb} />
+        </div>
         <div className="text-2xl font-light tracking-tight text-foreground tabular-nums flex items-baseline gap-1.5">
-          <span>{netThb.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+          <span>{currentThb.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
           <span className="text-xs font-light text-muted-foreground">THB</span>
         </div>
+        {netThb !== 0 && (
+          <p className="text-[10px] font-light text-muted-foreground">
+            Base: {baseThb.toLocaleString()} THB ({netThb > 0 ? "+" : ""}{netThb.toLocaleString()} net)
+          </p>
+        )}
       </div>
     </div>
   );

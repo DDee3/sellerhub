@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -21,23 +21,35 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useLanguage } from "@/components/providers/language-provider";
 
-const signupSchema = z.object({
-  shop_name: z.string().min(1, { message: "Shop name is required" }),
-  email: z
-    .string()
-    .min(1, { message: "Email is required" })
-    .email({ message: "Please enter a valid email address" }),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters" }),
-});
-
-type SignupFormValues = z.infer<typeof signupSchema>;
+interface SignupFormValues {
+  shop_name: string;
+  email: string;
+  password: string;
+}
 
 export default function SignupPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
+
+  const signupSchema = useMemo(
+    () =>
+      z.object({
+        shop_name: z
+          .string()
+          .min(1, { message: t("auth.error_shop_name_required") }),
+        email: z
+          .string()
+          .min(1, { message: t("auth.error_email_required") })
+          .email({ message: t("auth.error_email_invalid") }),
+        password: z
+          .string()
+          .min(6, { message: t("auth.error_password_min") }),
+      }),
+    [t]
+  );
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -53,26 +65,22 @@ export default function SignupPage() {
     const supabase = createClient();
 
     try {
-      // 1. supabase.auth.signUp
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email.trim(),
         password: values.password,
       });
 
-      // 2. if error -> toast, return
       if (authError) {
-        toast.error(authError.message || "Sign up failed");
+        toast.error(authError.message || t("auth.error_signup_failed"));
         return;
       }
 
-      // 3. if no session -> toast, push /login, return
       if (!authData?.session) {
-        toast("Check your email to confirm, then log in");
+        toast(t("auth.confirm_email_msg"));
         router.push("/login");
         return;
       }
 
-      // 4. insert into shops (owner_id = user.id, name = shop name)
       if (authData.user) {
         const { error: shopError } = await supabase.from("shops").insert({
           owner_id: authData.user.id,
@@ -81,17 +89,16 @@ export default function SignupPage() {
 
         if (shopError) {
           console.error("[Signup] Shop creation error:", shopError);
-          toast.error("Account created, but failed to initialize shop");
+          toast.error(t("auth.shop_init_failed"));
         }
       }
 
-      // 5. push /dashboard, refresh
-      toast.success("Account created successfully");
+      toast.success(t("auth.signup_success"));
       router.push("/dashboard");
       router.refresh();
     } catch (err: unknown) {
       console.error("[Signup] Unexpected error:", err);
-      toast.error("An unexpected error occurred. Please try again.");
+      toast.error(t("auth.error_unexpected"));
     } finally {
       setIsLoading(false);
     }
@@ -101,10 +108,10 @@ export default function SignupPage() {
     <div className="space-y-6">
       <div className="space-y-1.5">
         <h1 className="text-2xl font-light tracking-[-0.64px] text-foreground">
-          Create an account
+          {t("auth.signup_title")}
         </h1>
         <p className="text-[13px] font-light text-muted-foreground">
-          Enter your details below to get started
+          {t("auth.signup_subtitle")}
         </p>
       </div>
 
@@ -116,12 +123,12 @@ export default function SignupPage() {
             render={({ field }) => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-[13px] font-normal text-foreground">
-                  Shop Name
+                  {t("auth.shop_name")}
                 </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    placeholder="My Store"
+                    placeholder={t("auth.shop_name_placeholder")}
                     disabled={isLoading}
                     className="h-10 text-[15px] font-light bg-card border-input"
                   />
@@ -137,13 +144,13 @@ export default function SignupPage() {
             render={({ field }) => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-[13px] font-normal text-foreground">
-                  Email
+                  {t("auth.email")}
                 </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     type="email"
-                    placeholder="name@example.com"
+                    placeholder={t("auth.email_placeholder")}
                     autoComplete="email"
                     disabled={isLoading}
                     className="h-10 text-[15px] font-light bg-card border-input"
@@ -160,12 +167,12 @@ export default function SignupPage() {
             render={({ field }) => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-[13px] font-normal text-foreground">
-                  Password
+                  {t("auth.password")}
                 </FormLabel>
                 <FormControl>
                   <PasswordInput
                     {...field}
-                    placeholder="••••••••"
+                    placeholder={t("auth.password_placeholder")}
                     autoComplete="new-password"
                     disabled={isLoading}
                     className="h-10 text-[15px] font-light bg-card border-input"
@@ -184,10 +191,10 @@ export default function SignupPage() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating account...
+                {t("auth.creating_account")}
               </>
             ) : (
-              "Sign Up"
+              t("auth.signup_button")
             )}
           </Button>
         </form>
@@ -195,12 +202,12 @@ export default function SignupPage() {
 
       <div className="text-center pt-4 border-t border-border">
         <p className="text-[13px] font-light text-muted-foreground">
-          Already have an account?{" "}
+          {t("auth.has_account")}{" "}
           <Link
             href="/login"
             className="font-normal text-primary hover:underline underline-offset-4"
           >
-            Sign in
+            {t("auth.signin_link")}
           </Link>
         </p>
       </div>

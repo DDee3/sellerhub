@@ -19,9 +19,9 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 export function RateCardView() {
-  const [rate1, setRate1] = useState<string>("137.36");
-  const [rate2, setRate2] = useState<string>("137.55");
-  const [rate3, setRate3] = useState<string>("134.4");
+  const [rate1, setRate1] = useState<string>("728");
+  const [rate2, setRate2] = useState<string>("727");
+  const [rate3, setRate3] = useState<string>("744");
 
   const [previewTheme, setPreviewTheme] = useState<"light" | "dark">("light");
   const [timeString, setTimeString] = useState<string>("");
@@ -59,9 +59,15 @@ export function RateCardView() {
   const num2 = parseFloat(rate2);
   const num3 = parseFloat(rate3);
 
-  const calc1 = !isNaN(num1) && num1 > 0 ? Math.floor(100000 / num1) : 0;
-  const calc2 = !isNaN(num2) && num2 > 0 ? Math.floor(100000 / num2) : 0;
-  const calc3 = !isNaN(num3) && num3 > 0 ? Math.floor(100000 / num3) : 0;
+  // Since user directly inputs THB per 1 Lakh MMK, use directly for Lakh amount
+  const calc1 = !isNaN(num1) && num1 > 0 ? rate1 : "0";
+  const calc2 = !isNaN(num2) && num2 > 0 ? rate2 : "0";
+  const calc3 = !isNaN(num3) && num3 > 0 ? rate3 : "0";
+
+  // Calculate reverse "1 THB = X MMK" value (100,000 / inputted_baht_per_lakh)
+  const ratePerThb1 = !isNaN(num1) && num1 > 0 ? (100000 / num1).toFixed(2) : "0";
+  const ratePerThb2 = !isNaN(num2) && num2 > 0 ? (100000 / num2).toFixed(2) : "0";
+  const ratePerThb3 = !isNaN(num3) && num3 > 0 ? (100000 / num3).toFixed(2) : "0";
 
   const outputText = `Update Rate
 ${timeString}💸
@@ -69,12 +75,12 @@ ${timeString}💸
 [kyat➡️baht]  { ${calc1} baht }
 ———Baht 50,000အထက်———
 
-1 THB = ${rate1}MMK{ ${calc1} baht}
+1 THB = ${ratePerThb1}MMK{ ${calc1} baht}
 Baht 5000⏬🔽🔽
-1 THB = ${rate2}MMK{ ${calc2} baht}
+1 THB = ${ratePerThb2}MMK{ ${calc2} baht}
 
 🇹🇭🔁🇲🇲 [baht to kyat]
-1 THB = ${rate3}MMK{ ${calc3} baht }
+1 THB = ${ratePerThb3}MMK{ ${calc3} baht }
 
 K PAY / KBZ Special / Wave Pay / AYA / CB Special / AYA PAY / CB PAY နဲ့လဲလို့ရပါတယ်
 
@@ -93,9 +99,9 @@ K PAY / KBZ Special / Wave Pay / AYA / CB Special / AYA PAY / CB PAY နဲ့�
   };
 
   const handleResetDefaults = () => {
-    setRate1("137.36");
-    setRate2("137.55");
-    setRate3("134.4");
+    setRate1("728");
+    setRate2("727");
+    setRate3("744");
     refreshTimestamp();
     toast.success("Reset rates to defaults");
   };
@@ -139,7 +145,7 @@ K PAY / KBZ Special / Wave Pay / AYA / CB Special / AYA PAY / CB PAY နဲ့�
                 Rate Inputs
               </h2>
               <p className="text-xs font-light text-muted-foreground mt-0.5">
-                Enter rates in MMK per 1 THB. The Lakh conversions calculate automatically.
+                Enter rates in THB per 1 Lakh MMK.
               </p>
             </div>
           </div>
@@ -155,9 +161,9 @@ K PAY / KBZ Special / Wave Pay / AYA / CB Special / AYA PAY / CB PAY နဲ့�
                   Kyat to Baht (Above 50k)
                 </Label>
                 <span className="text-[11px] font-light text-muted-foreground">
-                  1 Lakh MMK ={" "}
+                  1 THB ={" "}
                   <strong className="font-normal text-foreground tabular-nums">
-                    {calc1} THB
+                    {ratePerThb1} MMK
                   </strong>
                 </span>
               </div>
@@ -168,11 +174,11 @@ K PAY / KBZ Special / Wave Pay / AYA / CB Special / AYA PAY / CB PAY နဲ့�
                   step="any"
                   value={rate1}
                   onChange={(e) => setRate1(e.target.value)}
-                  placeholder="137.36"
-                  className="h-10 rounded-[6px] bg-card text-foreground border-input text-sm font-light tabular-nums pr-16"
+                  placeholder="728"
+                  className="h-10 rounded-[6px] bg-card text-foreground border-input text-sm font-light tabular-nums pr-24"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-light pointer-events-none">
-                  MMK/THB
+                  THB / Lakh
                 </span>
               </div>
             </div>
@@ -187,9 +193,9 @@ K PAY / KBZ Special / Wave Pay / AYA / CB Special / AYA PAY / CB PAY နဲ့�
                   Kyat to Baht (Below 5k)
                 </Label>
                 <span className="text-[11px] font-light text-muted-foreground">
-                  1 Lakh MMK ={" "}
+                  1 THB ={" "}
                   <strong className="font-normal text-foreground tabular-nums">
-                    {calc2} THB
+                    {ratePerThb2} MMK
                   </strong>
                 </span>
               </div>
@@ -200,11 +206,11 @@ K PAY / KBZ Special / Wave Pay / AYA / CB Special / AYA PAY / CB PAY နဲ့�
                   step="any"
                   value={rate2}
                   onChange={(e) => setRate2(e.target.value)}
-                  placeholder="137.55"
-                  className="h-10 rounded-[6px] bg-card text-foreground border-input text-sm font-light tabular-nums pr-16"
+                  placeholder="727"
+                  className="h-10 rounded-[6px] bg-card text-foreground border-input text-sm font-light tabular-nums pr-24"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-light pointer-events-none">
-                  MMK/THB
+                  THB / Lakh
                 </span>
               </div>
             </div>
@@ -219,9 +225,9 @@ K PAY / KBZ Special / Wave Pay / AYA / CB Special / AYA PAY / CB PAY နဲ့�
                   Baht to Kyat
                 </Label>
                 <span className="text-[11px] font-light text-muted-foreground">
-                  1 Lakh MMK ={" "}
+                  1 THB ={" "}
                   <strong className="font-normal text-foreground tabular-nums">
-                    {calc3} THB
+                    {ratePerThb3} MMK
                   </strong>
                 </span>
               </div>
@@ -232,11 +238,11 @@ K PAY / KBZ Special / Wave Pay / AYA / CB Special / AYA PAY / CB PAY နဲ့�
                   step="any"
                   value={rate3}
                   onChange={(e) => setRate3(e.target.value)}
-                  placeholder="134.4"
-                  className="h-10 rounded-[6px] bg-card text-foreground border-input text-sm font-light tabular-nums pr-16"
+                  placeholder="744"
+                  className="h-10 rounded-[6px] bg-card text-foreground border-input text-sm font-light tabular-nums pr-24"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-light pointer-events-none">
-                  MMK/THB
+                  THB / Lakh
                 </span>
               </div>
             </div>
@@ -306,9 +312,9 @@ K PAY / KBZ Special / Wave Pay / AYA / CB Special / AYA PAY / CB PAY နဲ့�
             <div
               className={cn(
                 "relative rounded-xl p-4 sm:p-5 text-[13.5px] sm:text-sm leading-relaxed font-sans whitespace-pre-wrap select-all min-h-[340px] transition-colors border shadow-xs",
-                previewTheme === "light"
-                  ? "bg-white text-slate-900 border-slate-200"
-                  : "bg-slate-950 text-slate-100 border-slate-800"
+                previewTheme === "dark"
+                  ? "bg-zinc-900 text-zinc-100 border-zinc-800"
+                  : "bg-muted/50 text-card-foreground border-border"
               )}
             >
               {outputText}

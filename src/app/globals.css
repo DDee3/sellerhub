@@ -136,6 +136,12 @@
   --popover: #1c1e54;
   --popover-foreground: #ffffff;
 
+  --canvas: #0d253d;
+  --canvas-soft: #17243c;
+  --canvas-cream: #273951;
+  --hairline: #273951;
+  --hairline-input: #384e6b;
+
   --secondary: #17243c;
   --secondary-foreground: #f6f9fc;
   --muted: #17243c;

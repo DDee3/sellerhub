@@ -24,6 +24,8 @@ export interface Database {
           owner_id: string
           name: string
           rate_display_mode: RateDisplayMode | null
+          float_mmk: number
+          float_thb: number
           phone: string | null
           facebook_url: string | null
           telegram_username: string | null
@@ -36,6 +38,8 @@ export interface Database {
           owner_id: string
           name: string
           rate_display_mode?: RateDisplayMode | null
+          float_mmk?: number
+          float_thb?: number
           phone?: string | null
           facebook_url?: string | null
           telegram_username?: string | null
@@ -48,6 +52,8 @@ export interface Database {
           owner_id?: string
           name?: string
           rate_display_mode?: RateDisplayMode | null
+          float_mmk?: number
+          float_thb?: number
           phone?: string | null
           facebook_url?: string | null
           telegram_username?: string | null
@@ -139,6 +145,38 @@ export interface Database {
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "shops"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      deal_sources: {
+        Row: {
+          id: string
+          deal_id: string
+          source_amount: number
+          source_rate: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          deal_id: string
+          source_amount: number
+          source_rate: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          deal_id?: string
+          source_amount?: number
+          source_rate?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_sources_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
             referencedColumns: ["id"]
           }
         ]
@@ -373,3 +411,6 @@ export interface Database {
 export type Deal = Database['public']['Tables']['deals']['Row']
 export type InsertDeal = Database['public']['Tables']['deals']['Insert']
 export type UpdateDeal = Database['public']['Tables']['deals']['Update']
+export type DealSource = Database['public']['Tables']['deal_sources']['Row']
+export type InsertDealSource = Database['public']['Tables']['deal_sources']['Insert']
+export type UpdateDealSource = Database['public']['Tables']['deal_sources']['Update']

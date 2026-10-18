@@ -15,7 +15,12 @@ interface EditDealPageProps {
   params: Promise<{ id: string }>;
 }
 
-async function EditDealLoader({ id }: { id: string }) {
+async function EditDealLoader({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   await connection();
   const supabase = await createClient();
 
@@ -52,6 +57,13 @@ async function EditDealLoader({ id }: { id: string }) {
     notFound();
   }
 
+  // Fetch deal_sources for this deal
+  const { data: dealSources } = await supabase
+    .from("deal_sources")
+    .select("source_amount, source_rate")
+    .eq("deal_id", id)
+    .order("created_at", { ascending: true });
+
   // Also fetch customers list for this shop
   const { data: _customers } = await supabase
     .from("customers")
@@ -65,14 +77,13 @@ async function EditDealLoader({ id }: { id: string }) {
     <DealForm
       dealId={id}
       initialData={deal}
+      initialSources={dealSources}
       initialRateDisplayMode={rateDisplayMode}
     />
   );
 }
 
-export default async function EditDealPage({ params }: EditDealPageProps) {
-  const { id } = await params;
-
+export default function EditDealPage({ params }: EditDealPageProps) {
   return (
     <div className="space-y-6 max-w-xl">
       {/* Back link & Title */}
@@ -95,7 +106,7 @@ export default async function EditDealPage({ params }: EditDealPageProps) {
           <div className="h-96 rounded-xl border border-border bg-card p-6 shadow-stripi-1 animate-pulse" />
         }
       >
-        <EditDealLoader id={id} />
+        <EditDealLoader params={params} />
       </Suspense>
     </div>
   );
