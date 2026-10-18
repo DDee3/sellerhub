@@ -1,5 +1,5 @@
 import React from "react";
-import Image from "next/image";
+import { Store } from "lucide-react";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -7,7 +7,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="w-full max-w-md">
         {/* Logo + Branding */}
         <div className="flex flex-col items-center mb-8">
-          <Image src="/logo.png" alt="SellerHub" width={64} height={64} className="rounded-2xl object-contain mb-4" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 mb-4 shadow-sm border border-primary/20">
+            <Store className="h-8 w-8 text-primary" />
+          </div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">SellerHub</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage your reseller business</p>
         </div>
@@ -16,4 +18,3 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     </div>
   );
 }
-

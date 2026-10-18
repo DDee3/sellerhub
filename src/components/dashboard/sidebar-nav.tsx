@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -10,6 +9,7 @@ import {
   Truck,
   Users,
   Settings,
+  Store,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "@/components/logout-button";
@@ -92,14 +92,9 @@ export function SidebarNav({
           title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
           className="w-full flex items-center justify-center md:justify-start gap-3 p-1 rounded-2xl transition-all duration-200 hover:opacity-90 group text-left outline-none"
         >
-          <Image
-            src="/logo.png"
-            alt="SellerHub"
-            width={40}
-            height={40}
-            className="rounded-xl object-contain shrink-0"
-            priority
-          />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 shadow-xs border border-primary/20 shrink-0">
+            <Store className="h-5 w-5 text-primary" />
+          </div>
           {isExpanded && (
             <div className="min-w-0 transition-opacity duration-200">
               <h1 className="text-xl font-bold tracking-tight text-foreground leading-none">

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { Store } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { UserAvatarDropdown } from "@/components/dashboard/user-avatar-dropdown";
 
@@ -10,14 +10,9 @@ export function MobileHeader({ shopName }: { shopName?: string }) {
     <header className="flex md:hidden h-14 items-center justify-between border-b border-border/60 bg-background/80 backdrop-blur-md px-4 sticky top-0 z-40 select-none">
       {/* Brand / Logo on Left */}
       <Link href="/dashboard" className="flex items-center gap-2.5 group">
-        <Image
-          src="/logo.png"
-          alt="SellerHub"
-          width={32}
-          height={32}
-          className="rounded-xl object-contain shrink-0"
-          priority
-        />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 shadow-xs border border-primary/20 shrink-0">
+          <Store className="h-4 w-4 text-primary" />
+        </div>
         <span className="font-bold text-base tracking-tight text-foreground">
           SellerHub
         </span>
