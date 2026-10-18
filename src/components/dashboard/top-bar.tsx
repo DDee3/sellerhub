@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { UserAvatarDropdown } from "@/components/dashboard/user-avatar-dropdown";
 import { useLanguage } from "@/components/providers/language-provider";
 import type { DictKey } from "@/lib/i18n/dictionary";
 
@@ -37,14 +36,6 @@ export function TopBar({ shopName }: { shopName?: string }) {
         {/* Theme Toggle */}
         <div className="flex items-center bg-muted/50 p-1 rounded-full border border-border/50 shadow-soft">
           <ThemeToggle />
-        </div>
-
-        {/* User / Shop Avatar Dropdown */}
-        <div className="flex items-center gap-3 pl-2 border-l border-border/60">
-          <UserAvatarDropdown shopName={shopName} />
-          <span className="text-sm font-medium text-foreground hidden lg:inline">
-            {shopName}
-          </span>
         </div>
       </div>
     </header>

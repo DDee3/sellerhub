@@ -92,7 +92,7 @@ export function SidebarNav({
           title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
           className="w-full flex items-center justify-center md:justify-start gap-3 p-1 rounded-2xl transition-all duration-200 hover:opacity-90 group text-left outline-none"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 shadow-xs border border-primary/20 shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 shrink-0 shadow-xs">
             <Store className="h-5 w-5 text-primary" />
           </div>
           {isExpanded && (
