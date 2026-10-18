@@ -24,11 +24,24 @@ import {
 import { cn } from "@/lib/utils";
 import type { RateDisplayMode } from "@/types/database";
 
-interface DealFormProps {
+export interface DealFormProps {
   initialRateDisplayMode?: RateDisplayMode;
+  dealId?: string;
+  initialData?: {
+    direction: "mmk_to_thb" | "thb_to_mmk";
+    amount_in: number;
+    customer_rate: number;
+    source_rate?: number | null;
+    note?: string | null;
+    customer_id?: string | null;
+  } | null;
 }
 
-export function DealForm({ initialRateDisplayMode }: DealFormProps) {
+export function DealForm({
+  initialRateDisplayMode,
+  dealId,
+  initialData,
+}: DealFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rateDisplayMode, setRateDisplayMode] = useState<RateDisplayMode>(
@@ -69,14 +82,47 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
     };
   }, []);
 
+  const getInitialRates = (mode: RateDisplayMode) => {
+    if (!initialData) {
+      return {
+        customer_rate: "" as unknown as number,
+        source_rate: "" as unknown as number,
+      };
+    }
+    const isLakh = mode === "thb_per_lakh";
+    const custRate = initialData.customer_rate
+      ? isLakh
+        ? initialData.customer_rate > 500
+          ? initialData.customer_rate
+          : Number((100000 / initialData.customer_rate).toFixed(2))
+        : initialData.customer_rate > 500
+        ? Number((100000 / initialData.customer_rate).toFixed(2))
+        : initialData.customer_rate
+      : ("" as unknown as number);
+
+    const srcRate = initialData.source_rate
+      ? isLakh
+        ? initialData.source_rate > 500
+          ? initialData.source_rate
+          : Number((100000 / initialData.source_rate).toFixed(2))
+        : initialData.source_rate > 500
+        ? Number((100000 / initialData.source_rate).toFixed(2))
+        : initialData.source_rate
+      : ("" as unknown as number);
+
+    return { customer_rate: custRate, source_rate: srcRate };
+  };
+
+  const initialRates = getInitialRates(initialRateDisplayMode || "mmk_per_thb");
+
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealSchema) as unknown as Resolver<DealFormValues>,
     defaultValues: {
-      direction: "mmk_to_thb",
-      amount_in: "" as unknown as number,
-      customer_rate: "" as unknown as number,
-      source_rate: "" as unknown as number,
-      note: "",
+      direction: initialData?.direction || "mmk_to_thb",
+      amount_in: initialData?.amount_in ?? ("" as unknown as number),
+      customer_rate: initialRates.customer_rate,
+      source_rate: initialRates.source_rate,
+      note: initialData?.note || "",
     },
     mode: "onSubmit",
     reValidateMode: "onChange",
@@ -219,27 +265,54 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
         finalProfitMmk = Number(finalProfitMmk.toFixed(2));
       }
 
-      const { error: insertError } = await supabase.from("deals").insert({
-        shop_id: shop.id,
-        direction: values.direction,
-        amount_in: finalAmountIn,
-        customer_rate: Number(real_customer_rate.toFixed(6)),
-        source_rate:
-          real_source_rate !== null
-            ? Number(real_source_rate.toFixed(6))
-            : null,
-        amount_out: finalAmountOut,
-        profit_mmk: finalProfitMmk,
-        note: values.note?.trim() || null,
-      });
+      if (dealId) {
+        const { error: updateError } = await supabase
+          .from("deals")
+          .update({
+            direction: values.direction,
+            amount_in: finalAmountIn,
+            customer_rate: Number(real_customer_rate.toFixed(6)),
+            source_rate:
+              real_source_rate !== null
+                ? Number(real_source_rate.toFixed(6))
+                : null,
+            amount_out: finalAmountOut,
+            profit_mmk: finalProfitMmk,
+            note: values.note?.trim() || null,
+          })
+          .eq("id", dealId);
 
-      if (insertError) {
-        console.error("[DealForm] Insert error:", insertError);
-        toast.error(insertError.message || "Failed to save deal");
-        return;
+        if (updateError) {
+          console.error("[DealForm] Update error:", updateError);
+          toast.error(updateError.message || "Failed to update deal");
+          return;
+        }
+
+        toast.success("Deal updated");
+      } else {
+        const { error: insertError } = await supabase.from("deals").insert({
+          shop_id: shop.id,
+          direction: values.direction,
+          amount_in: finalAmountIn,
+          customer_rate: Number(real_customer_rate.toFixed(6)),
+          source_rate:
+            real_source_rate !== null
+              ? Number(real_source_rate.toFixed(6))
+              : null,
+          amount_out: finalAmountOut,
+          profit_mmk: finalProfitMmk,
+          note: values.note?.trim() || null,
+        });
+
+        if (insertError) {
+          console.error("[DealForm] Insert error:", insertError);
+          toast.error(insertError.message || "Failed to save deal");
+          return;
+        }
+
+        toast.success("Deal saved");
       }
 
-      toast.success("Deal saved");
       router.push("/deals");
       router.refresh();
     } catch (err: unknown) {
@@ -492,10 +565,10 @@ export function DealForm({ initialRateDisplayMode }: DealFormProps) {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving deal...
+                {dealId ? "Updating deal..." : "Saving deal..."}
               </>
             ) : (
-              "Save deal"
+              dealId ? "Update Deal" : "Save deal"
             )}
           </Button>
         </form>

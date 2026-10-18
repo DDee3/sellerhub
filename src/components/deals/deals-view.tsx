@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Plus, Download, ArrowLeftRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Plus, Download, ArrowLeftRight, Pencil, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import type { DealListItem } from "@/lib/queries/deals";
 import type { RateDisplayMode } from "@/types/database";
@@ -14,6 +17,8 @@ interface DealsViewProps {
 }
 
 export function DealsView({ deals, rateDisplayMode }: DealsViewProps) {
+  const router = useRouter();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const isLakhMode = rateDisplayMode === "thb_per_lakh";
 
   const formatDate = (dateString: string) => {
@@ -92,6 +97,25 @@ export function DealsView({ deals, rateDisplayMode }: DealsViewProps) {
     URL.revokeObjectURL(url);
 
     toast.success(`Exported ${deals.length} deals to CSV`);
+  };
+
+  const handleDelete = async (dealId: string) => {
+    if (!window.confirm("Are you sure you want to delete this deal?")) return;
+    try {
+      setDeletingId(dealId);
+      const supabase = createClient();
+      const { error } = await supabase.from("deals").delete().eq("id", dealId);
+      if (error) {
+        toast.error("Failed to delete deal: " + error.message);
+        return;
+      }
+      toast.success("Deal deleted");
+      router.refresh();
+    } catch {
+      toast.error("Failed to delete deal");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -173,6 +197,9 @@ export function DealsView({ deals, rateDisplayMode }: DealsViewProps) {
                   <th className="py-2.5 px-3.5 font-normal text-[11px] tracking-[0.05px]">
                     Note
                   </th>
+                  <th className="py-2.5 px-3.5 text-right font-normal text-[11px] tracking-[0.05px]">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -251,6 +278,32 @@ export function DealsView({ deals, rateDisplayMode }: DealsViewProps) {
                       </td>
                       <td className="py-2.5 px-3.5 text-muted-foreground font-light max-w-xs truncate">
                         {deal.note || "—"}
+                      </td>
+                      <td className="py-2.5 px-3.5 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
+                          <Link
+                            href={`/deals/${deal.id}/edit`}
+                            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors inline-flex items-center justify-center"
+                            title="Edit deal"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                            <span className="sr-only">Edit</span>
+                          </Link>
+                          <button
+                            type="button"
+                            disabled={deletingId === deal.id}
+                            onClick={() => handleDelete(deal.id)}
+                            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors inline-flex items-center justify-center disabled:opacity-50"
+                            title="Delete deal"
+                          >
+                            {deletingId === deal.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin text-destructive" />
+                            ) : (
+                              <Trash2 className="h-3.5 w-3.5" />
+                            )}
+                            <span className="sr-only">Delete</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
